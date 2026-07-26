@@ -1,0 +1,47 @@
+id: char.ines
+type: character
+name: Ines Vargas
+species: human
+status: canon
+born: { era: era.before-the-point, date: "1874", precision: year, approximate: true }
+summary: >
+  Keeper of Whitcombe Light since 1908. Took the posting the year her sister
+  married and the house emptied; has not left the point for longer than a
+  supply run since.
+appearance: >
+  Weathered, small, deliberate. Hands scarred from the lamp's brass. Wears her
+  father's coat, too big, because it has the right pockets.
+voice: >
+  Speaks aloud constantly — to the dog, the lamp, the weather — and barely at
+  all to people. Sentences to Wren are long and easy; sentences to humans come
+  out clipped, as if rationed.
+tags: [protagonist]
+grounding: [lighthouse-keeping]
+narrative_notes: >
+  Her solitude must read as chosen and sufficient, not as damage waiting to be
+  healed — otherwise the wreck's intrusion is a rescue rather than a cost.
+
+states:
+  - at: { era: era.keeping, date: "1910", precision: year }
+    age: 36
+    location: place.whitcombe-light
+    condition: strong, weather-worn, sleeping in four-hour halves around the watch
+    psychology: >
+      Content in a way she would not be able to defend to anyone who asked.
+      The routine is the point: trim, wind, log, walk the dog, sleep, repeat.
+    relationships:
+      - { toward: char.wren, stance: "the one conversation; assumed permanent" }
+      - { toward: place.whitcombe-light, stance: "not a job — the shape of the day itself" }
+
+  - at: { era: era.after-the-wreck, date: "1911-02", precision: month }
+    caused_by: [event.the-wreck]
+    age: 37
+    location: place.whitcombe-light
+    condition: exhausted; a burn along the left forearm from the lamp-room glass
+    psychology: >
+      Nine survivors slept in her kitchen for six days. She got them warm, fed
+      them, and counted the hours until they left — then found the quiet
+      afterward had a hole in it she cannot account for.
+    relationships:
+      - { toward: char.wren, stance: "watched him choose the water; has not stopped seeing it" }
+      - { toward: place.whitcombe-light, stance: "still the shape of the day, but the day now has strangers in its history" }

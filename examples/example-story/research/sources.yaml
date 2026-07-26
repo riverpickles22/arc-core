@@ -1,0 +1,15 @@
+# Citation registry for research/topics/*.md — keys are cited inline as [@key].
+# validate.py fails on any [@key] that is not registered here.
+sources:
+  - key: example-keeper-manual
+    type: book
+    title: 'Instructions to Light-Keepers (illustrative placeholder)'
+    author: Placeholder Lighthouse Board
+    year: 1902
+    reliability: medium
+    topics:
+      - lighthouse-keeping
+    note: >
+      NOT A REAL SOURCE. This entry exists so the example story demonstrates
+      the citation mechanism. A real story's sources.yaml must cite real,
+      checkable works — see conventions.md on research discipline.

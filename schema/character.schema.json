@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/character.schema.json",
+  "title": "arc character (humans and animals)",
+  "type": "object",
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/charId" },
+    "type": { "const": "character" },
+    "name": { "type": "string" },
+    "aliases": { "type": "array", "items": { "type": "string" } },
+    "species": { "type": "string", "description": "human, dog, ..." },
+    "status": { "$ref": "common.schema.json#/$defs/status" },
+    "born": { "$ref": "common.schema.json#/$defs/timerefOrDate" },
+    "died": { "$ref": "common.schema.json#/$defs/timerefOrDate" },
+    "summary": { "type": "string" },
+    "appearance": { "type": "string" },
+    "voice": { "type": "string", "description": "speech/behavioral signature for prose consistency" },
+    "tags": { "$ref": "common.schema.json#/$defs/tags" },
+    "grounding": { "$ref": "common.schema.json#/$defs/grounding" },
+    "narrative_notes": { "type": "string" },
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "common.schema.json#/$defs/state" }
+    }
+  },
+  "required": ["id", "type", "name", "species", "status", "summary", "states"],
+  "additionalProperties": false
+}

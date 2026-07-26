@@ -1,0 +1,30 @@
+# Eras partition story-time; every timeref anchors to one. Anchors are named
+# instants other records can point at instead of repeating a bare date.
+eras:
+  - id: era.before-the-point
+    name: Before the point (entirely off-page)
+    span: { start: "1870-01-01", end: "1907-12-31" }
+    mood: n/a — backstory only
+    notes: >
+      Nothing here is dramatized. The era exists so that birth dates and other
+      backstory timerefs have a valid era to anchor to; without it the
+      validator rejects them as preceding the timeline. Most stories want one.
+
+  - id: era.keeping
+    name: The keeping years
+    span: { start: "1908-01-01", end: "1910-12-31" }
+    mood: wind, routine, and the comfort of a task that cannot be skipped
+    notes: >
+      Ines alone on the point with Wren. Nothing happens, on purpose — this
+      era exists to give the storm something to interrupt.
+
+  - id: era.after-the-wreck
+    name: After the wreck
+    span: { start: "1911-01-01", end: "1911-12-31" }
+    mood: a house with strangers in it; the silence broken and not restored
+    notes: >
+      The consequences era. Kept separate so state snapshots can sit clearly
+      on either side of the rupture.
+
+anchors:
+  - { id: tp.the-storm, date: "1911-01-14", label: The night the Aurelia strikes the shoal }

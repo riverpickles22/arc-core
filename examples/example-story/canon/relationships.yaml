@@ -1,0 +1,24 @@
+# Objective edges between entities. Perception — how one entity *sees* another
+# at a given moment — is subjective and lives in each entity's states, not here.
+relationships:
+  - id: rel.ines-wren
+    type: relationship
+    kind: companion-animal
+    status: canon
+    from: char.ines
+    to: char.wren
+    directed: false
+    span: { start: { date: "1908", approximate: true } }
+    summary: >
+      Nine years of one voice and one listener. The only relationship either
+      of them has had to maintain.
+
+  - id: rel.ines-light
+    type: relationship
+    kind: controls
+    status: canon
+    from: char.ines
+    to: place.whitcombe-light
+    directed: true
+    span: { start: { date: "1908-03" } }
+    summary: Keeper of record — the lamp, the log, the stairs, the glass.

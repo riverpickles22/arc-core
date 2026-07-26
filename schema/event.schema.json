@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/event.schema.json",
+  "title": "arc event (story or historical backdrop)",
+  "type": "object",
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/eventId" },
+    "type": { "const": "event" },
+    "scope": { "enum": ["story", "historical", "both"] },
+    "status": { "$ref": "common.schema.json#/$defs/status" },
+    "title": { "type": "string" },
+    "when": { "$ref": "common.schema.json#/$defs/timeref" },
+    "where": { "$ref": "common.schema.json#/$defs/placeId" },
+    "participants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity": { "$ref": "common.schema.json#/$defs/entityId" },
+          "role": { "type": "string" }
+        },
+        "required": ["entity", "role"],
+        "additionalProperties": false
+      }
+    },
+    "witnesses": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/entityId" } },
+    "causes": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/eventId" } },
+    "leads_to": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/eventId" } },
+    "summary": { "type": "string" },
+    "narrative_notes": { "type": "string" },
+    "on_page": { "type": "boolean", "description": "whether this event is dramatized in prose (vs backdrop/off-page)" },
+    "tags": { "$ref": "common.schema.json#/$defs/tags" },
+    "grounding": { "$ref": "common.schema.json#/$defs/grounding" }
+  },
+  "required": ["id", "type", "scope", "status", "title", "when", "summary"],
+  "additionalProperties": false
+}

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/place.schema.json",
+  "title": "arc place",
+  "type": "object",
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/placeId" },
+    "type": { "const": "place" },
+    "name": { "type": "string" },
+    "aliases": { "type": "array", "items": { "type": "string" } },
+    "kind": { "enum": ["country", "region", "city", "district", "street", "building", "landmark", "waterfront"] },
+    "status": { "$ref": "common.schema.json#/$defs/status" },
+    "part_of": { "$ref": "common.schema.json#/$defs/placeId" },
+    "real": { "type": "boolean", "description": "true if this is a real-world place; false if invented" },
+    "coordinates": {
+      "type": "object",
+      "description": "For the future map view; real places use real WGS84 coords",
+      "properties": {
+        "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+        "lon": { "type": "number", "minimum": -180, "maximum": 180 },
+        "approximate": { "type": "boolean" }
+      },
+      "required": ["lat", "lon"],
+      "additionalProperties": false
+    },
+    "summary": { "type": "string" },
+    "sensory": { "type": "string", "description": "sights/sounds/smells for prose texture" },
+    "tags": { "$ref": "common.schema.json#/$defs/tags" },
+    "grounding": { "$ref": "common.schema.json#/$defs/grounding" },
+    "narrative_notes": { "type": "string" },
+    "states": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/state" }
+    }
+  },
+  "required": ["id", "type", "name", "kind", "status", "summary"],
+  "additionalProperties": false
+}

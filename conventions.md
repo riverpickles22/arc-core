@@ -1,0 +1,105 @@
+# arc conventions
+
+The constitution for every arc story. Canon files, docs, and tools all conform to what is written here.
+
+## 1. Layers and supremacy
+
+1. **Canon** (`canon/**/*.yaml`) — structured facts. The single source of truth.
+2. **Docs** (`docs/**/*.md`) — human-readable articles that elaborate on canon.
+3. **Prose** (`prose/`) — the manuscript.
+4. Conversation / working notes — ephemeral.
+
+On any conflict: **canon > docs > prose > conversation**. Prose must never contradict a `status: canon` fact. A fact that exists only in a doc or in prose is not yet a fact — it must be promoted into canon or logged as an open question.
+
+## 2. Identifiers
+
+Every canonical thing has a stable ID: `type.slug`, kebab-case, optionally hierarchical with dots.
+
+| Prefix | Type | Examples |
+|---|---|---|
+| `char.` | character (humans *and* animals) | `char.carlos`, `char.diego` |
+| `place.` | place (hierarchy via dots) | `place.havana`, `place.havana.habana-vieja` |
+| `faction.` | faction / organization / group | `faction.m-26-7`, `faction.feral-pack` |
+| `obj.` | significant object | `obj.photo-carlos-diego` |
+| `event.` | event (story or historical) | `event.parents-executed` |
+| `era.` | timeline era | `era.special-period` |
+| `tp.` | named timepoint (anchor) | `tp.triumph` |
+| `rel.` | objective relationship edge | `rel.carlos-diego` |
+| `ch.` | chapter (narrative structure) | `ch.05-the-denunciation` |
+
+Regex: `^[a-z]+\.[a-z0-9-]+(\.[a-z0-9-]+)*$`
+
+Rules:
+- IDs are permanent. Renaming an entity changes its `name`, never its ID.
+- The file for `char.carlos` is `canon/entities/characters/carlos.yaml`; for `place.havana.habana-vieja` it is `canon/entities/places/havana.habana-vieja.yaml` (full dotted slug as filename).
+- Before minting an ID, grep for collisions: `grep -rn "char.new-slug" canon docs`.
+- When you mint an entity, create its YAML file and its docs article stub together.
+
+## 3. Dates and time
+
+ISO-8601 strings with **reduced precision allowed**: `"1959"`, `"1959-01"`, `"1959-01-01"`.
+
+A *timeref* is an object:
+
+```yaml
+at: { era: era.revolution, date: "1959-01", precision: month, approximate: true }
+```
+
+- `era` — required; the era ID this moment belongs to.
+- `date` — optional; as precise as honestly known.
+- `precision` — `year | month | day` (defaults to the precision of the string).
+- `approximate: true` — the date is a deliberate blur, not a researched fact.
+
+Never invent false precision. `"1959"` + `approximate: true` beats a fabricated exact day.
+
+## 4. Versioned state (the journey)
+
+Characters and places carry a `states:` list — **time-ordered snapshots**. Snapshots are authoritative: to know an entity's condition at story-time *T*, take the latest state whose `at` ≤ *T*. No replay logic.
+
+- A snapshot may declare `caused_by: [event.*]` — the events that produced it. Causality is traceable, but the snapshot itself is the record.
+- **Objective vs subjective:** objective relationships (kinship, ownership, membership) live in `canon/relationships.yaml`. How a character *perceives* a relationship at a moment in time lives in that character's state snapshot under `relationships:`. The edge "Carlos owns Diego" never changes; Carlos's *feelings* about Diego change per snapshot. This is how arc versions perception.
+- New psychological development ⇒ new snapshot, not an edit to an old one (edit old snapshots only to correct errors).
+
+## 5. Status lifecycle
+
+Every entity, event, and edge carries `status`:
+
+- `proposed` — drafted, not yet ratified by the author. Agents may reference it but must not build load-bearing prose on it.
+- `canon` — binding. Prose and docs must conform.
+- `deprecated` — superseded; kept for history. Must carry a `superseded_by` or explanatory `note`.
+
+Promotion `proposed → canon` is an explicit authorial act, never a side effect.
+
+## 6. Canon-change discipline
+
+- A new fact invented while writing docs or prose is added to canon **in the same commit**, or filed under the relevant article's **Open questions** section.
+- Changing existing canon: update the YAML, update every affected state/event/article, explain the change in the commit message, run `tools/validate.py`.
+- Research findings never flow into canon automatically. A research pass files corrections as `status: proposed` entries (or `narrative_notes`) for the author to ratify.
+- Canon may deliberately diverge from history. When it does, note the divergence in the entity's `narrative_notes` or the article, citing the research topic it diverges from.
+
+## 7. Cross-referencing
+
+- Markdown → canon: wikilinks containing full IDs — `[[char.carlos]]`, or labeled `[[char.diego|Diego]]`. Greppable via `\[\[[a-z]+\.`.
+- Docs articles bind to their entity with frontmatter: `canon: char.carlos`. One article per entity, path mirroring `canon/entities/`.
+- Canon → research: a `grounding:` list of research topic slugs (`grounding: [havana-1950s]`) pointing at `research/topics/<slug>.md`.
+- Research claims cite `research/sources.yaml` keys inline: `[@mesa-lago-1994]`.
+- Docs sections not yet grounded carry a machine-findable marker: `> TODO(research: <topic-slug>)`.
+
+## 8. Files and validation
+
+- Canon is YAML (hand-editable, comments allowed, multiline prose fields). Schemas in arc-core's `schema/*.schema.json` (JSON Schema 2020-12) validate the *parsed* data.
+- One file per entity and per event. Objective edges collected in `canon/relationships.yaml`. Timeline in `canon/timeline.yaml`. Story manifest in `canon/story.yaml`.
+- `tools/validate.py` enforces: schema conformance, every referenced ID resolves, every wikilink resolves, every state/event timeref falls inside its declared era, every citation key exists in `sources.yaml`.
+
+## 9. Story layout and repo boundaries
+
+A story is a self-contained directory — `canon/`, `docs/`, `research/`, `prose/`, and a `CLAUDE.md` describing its agent workflow. It may live anywhere: its own repository, a sibling checkout, or a subdirectory of arc-core (as `examples/example-story` does). Nothing in arc-core is story-specific, and nothing in a story repeats what arc-core defines.
+
+The tools take a story path as an argument and resolve schemas relative to arc-core, so the two never need to share a working tree:
+
+```
+python3 tools/validate.py     ../my-story
+python3 tools/export-canon.py ../my-story
+```
+
+New stories copy `templates/` and the shape of `examples/example-story`. They never fork the schema — a story that needs a schema change needs it in arc-core, for everyone.

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/story.schema.json",
+  "title": "arc story manifest (canon/story.yaml)",
+  "type": "object",
+  "properties": {
+    "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+    "title": { "type": "string" },
+    "logline": { "type": "string" },
+    "genre": { "type": "string" },
+    "setting": { "type": "string" },
+    "status": { "enum": ["material", "drafting", "revising", "complete"] },
+    "protagonists": { "type": "array", "items": { "$ref": "common.schema.json#/$defs/charId" } },
+    "themes": { "type": "array", "items": { "type": "string" } },
+    "pov": { "type": "string", "description": "narrative point of view; may be 'open question' early on" },
+    "notes": { "type": "string" }
+  },
+  "required": ["slug", "title", "logline", "status", "protagonists", "themes"],
+  "additionalProperties": false
+}

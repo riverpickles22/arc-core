@@ -1,0 +1,262 @@
+#!/usr/bin/env python3
+"""arc canon validator.
+
+Usage: python3 tools/validate.py <path-to-story>
+
+The story may live anywhere — its own repo, a sibling checkout, a subdirectory
+of this one. Only the schemas are resolved relative to arc-core.
+
+Checks, per conventions.md §8:
+  1. Every canon YAML parses and conforms to its JSON Schema.
+  2. Referential integrity: every referenced ID (entities, events, eras,
+     timepoints, relationships) resolves to a defined ID.
+  3. Every wikilink [[id]] / [[id|label]] in docs resolves.
+  4. Every docs entity article's `canon:` frontmatter resolves, and every
+     entity has an article.
+  5. Every timeref's date falls inside its declared era's span.
+  6. Every grounding slug resolves to research/topics/<slug>.md.
+  7. Every [@citation-key] in research topics resolves in sources.yaml.
+
+Exit 0 = clean, 1 = findings.
+"""
+import json
+import re
+import sys
+from pathlib import Path
+
+try:
+    import yaml
+except ImportError:
+    sys.exit("pyyaml required: pip install pyyaml")
+
+try:
+    import jsonschema
+    from referencing import Registry, Resource
+    HAVE_JSONSCHEMA = True
+except ImportError:
+    HAVE_JSONSCHEMA = False
+
+CORE = Path(__file__).resolve().parent.parent
+SCHEMA_DIR = CORE / "schema"
+
+ID_RE = re.compile(r"^[a-z]+\.[a-z0-9-]+(\.[a-z0-9-]+)*$")
+WIKILINK_RE = re.compile(r"\[\[([a-z]+\.[a-z0-9.-]+)(?:\|[^\]]*)?\]\]")
+CITE_RE = re.compile(r"\[@([a-z0-9-]+)\]")
+ID_FIELD_RE = re.compile(
+    r"^(char|place|faction|obj|event|era|tp|rel|ch)\.[a-z0-9-]+(\.[a-z0-9-]+)*$"
+)
+
+findings = []
+
+
+def flag(path, msg):
+    findings.append(f"{path}: {msg}")
+
+
+def load_yaml(path):
+    try:
+        return yaml.safe_load(path.read_text())
+    except yaml.YAMLError as e:
+        flag(path, f"YAML parse error: {e}")
+        return None
+
+
+def schema_for(path, story_dir):
+    rel = path.relative_to(story_dir / "canon")
+    parts = rel.parts
+    if parts[0] == "entities":
+        return {"characters": "character", "places": "place",
+                "factions": "faction", "objects": "object"}[parts[1]]
+    if parts[0] == "events":
+        return "event"
+    return {"relationships.yaml": "relationship", "timeline.yaml": "timeline",
+            "story.yaml": "story", "chapters.yaml": "chapters"}.get(parts[0])
+
+
+def date_key(d):
+    """'1959' -> (1959,1,1) for containment lower-bound comparisons."""
+    parts = [int(p) for p in d.split("-")]
+    return tuple(parts + [1] * (3 - len(parts)))
+
+
+def date_key_end(d):
+    parts = [int(p) for p in d.split("-")]
+    return tuple(parts + [12, 31][len(parts) - 1:] if len(parts) < 3 else parts)
+
+
+def extract_span_date(v):
+    """span start/end may be a bare date string or a dict with date/era."""
+    if isinstance(v, str):
+        return v
+    if isinstance(v, dict):
+        return v.get("date")
+    return None
+
+
+def walk_ids(node, path, collect):
+    """Collect every string that looks like an arc ID anywhere in the doc."""
+    if isinstance(node, dict):
+        for k, v in node.items():
+            walk_ids(v, path, collect)
+    elif isinstance(node, list):
+        for v in node:
+            walk_ids(v, path, collect)
+    elif isinstance(node, str) and ID_FIELD_RE.match(node):
+        collect.append(node)
+
+
+def main():
+    if len(sys.argv) != 2:
+        sys.exit(__doc__)
+    story_dir = Path(sys.argv[1]).resolve()
+    if not (story_dir / "canon").is_dir():
+        sys.exit(f"not a story directory (no canon/): {story_dir}")
+    canon_dir = story_dir / "canon"
+    docs_dir = story_dir / "docs"
+    research_dir = story_dir / "research"
+
+    # --- load schemas
+    registry = None
+    schemas = {}
+    if HAVE_JSONSCHEMA:
+        resources = []
+        for sf in SCHEMA_DIR.glob("*.schema.json"):
+            data = json.loads(sf.read_text())
+            schemas[sf.stem.replace(".schema", "")] = data
+            resources.append((data["$id"], Resource.from_contents(data)))
+            resources.append((sf.name, Resource.from_contents(data)))
+        registry = Registry().with_resources(resources)
+
+    # --- pass 1: parse all canon, collect defined IDs
+    defined = {}
+    docs_of = {}   # entity id -> canon file (for article coverage check)
+    canon_files = sorted(canon_dir.rglob("*.yaml"))
+    for f in canon_files:
+        data = load_yaml(f)
+        if data is None:
+            continue
+        name = schema_for(f, story_dir)
+        if name is None:
+            flag(f, "no schema mapping for this file location")
+            continue
+        # schema validation
+        if HAVE_JSONSCHEMA and name in schemas:
+            validator = jsonschema.Draft202012Validator(schemas[name], registry=registry)
+            for err in validator.iter_errors(data):
+                flag(f, f"schema: {'/'.join(str(p) for p in err.path)}: {err.message[:200]}")
+        # defined IDs
+        if name in ("character", "place", "faction", "object", "event"):
+            if "id" in data:
+                defined[data["id"]] = f
+                if name != "event":
+                    docs_of[data["id"]] = f
+        elif name == "timeline":
+            for era in data.get("eras", []):
+                defined[era["id"]] = f
+            for a in data.get("anchors", []):
+                defined[a["id"]] = f
+        elif name == "relationship":
+            for r in data.get("relationships", []):
+                defined[r["id"]] = f
+        elif name == "chapters":
+            for c in data.get("chapters", []):
+                defined[c["id"]] = f
+
+    # --- timeline spans for era containment
+    timeline = load_yaml(canon_dir / "timeline.yaml") or {}
+    era_spans = {}
+    for era in timeline.get("eras", []):
+        s = extract_span_date(era["span"].get("start"))
+        e = extract_span_date(era["span"].get("end"))
+        era_spans[era["id"]] = (date_key(s) if s else None,
+                                date_key_end(e) if e else None)
+
+    # --- pass 2: referential integrity + era containment
+    def check_timerefs(node, f):
+        if isinstance(node, dict):
+            if "era" in node and isinstance(node.get("era"), str) and node["era"].startswith("era."):
+                era = node["era"]
+                d = node.get("date")
+                if era in era_spans and d:
+                    lo, hi = era_spans[era]
+                    if lo and date_key_end(d) < lo:
+                        flag(f, f"timeref {d} precedes era {era} start")
+                    if hi and date_key(d) > hi:
+                        flag(f, f"timeref {d} exceeds era {era} end")
+            for v in node.values():
+                check_timerefs(v, f)
+        elif isinstance(node, list):
+            for v in node:
+                check_timerefs(v, f)
+
+    research_topics = {p.stem for p in (research_dir / "topics").glob("*.md")} \
+        if (research_dir / "topics").is_dir() else set()
+
+    for f in canon_files:
+        data = load_yaml(f)
+        if data is None:
+            continue
+        refs = []
+        walk_ids(data, f, refs)
+        for r in refs:
+            if r not in defined:
+                flag(f, f"unresolved ID reference: {r}")
+        check_timerefs(data, f)
+        # grounding slugs
+        def check_grounding(node):
+            if isinstance(node, dict):
+                for slug in node.get("grounding", []) or []:
+                    if slug not in research_topics:
+                        flag(f, f"grounding topic not found: {slug}")
+                for v in node.values():
+                    check_grounding(v)
+            elif isinstance(node, list):
+                for v in node:
+                    check_grounding(v)
+        check_grounding(data)
+
+    # --- pass 3: docs — wikilinks + frontmatter binding + coverage
+    articles = {}
+    for f in sorted(docs_dir.rglob("*.md")):
+        text = f.read_text()
+        for m in WIKILINK_RE.finditer(text):
+            if m.group(1) not in defined:
+                flag(f, f"unresolved wikilink: [[{m.group(1)}]]")
+        fm = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+        if fm:
+            meta = yaml.safe_load(fm.group(1)) or {}
+            cid = meta.get("canon")
+            if cid:
+                if cid not in defined:
+                    flag(f, f"frontmatter canon id unresolved: {cid}")
+                else:
+                    articles[cid] = f
+    for eid in docs_of:
+        if eid not in articles:
+            flag(docs_of[eid], f"entity {eid} has no docs article")
+
+    # --- pass 4: research citations
+    src_file = research_dir / "sources.yaml"
+    if src_file.exists():
+        src = load_yaml(src_file) or {}
+        keys = {s["key"] for s in src.get("sources", [])}
+        for f in sorted((research_dir / "topics").glob("*.md")):
+            for m in CITE_RE.finditer(f.read_text()):
+                if m.group(1) not in keys:
+                    flag(f, f"citation key not in sources.yaml: [@{m.group(1)}]")
+
+    # --- report
+    if findings:
+        print(f"FAIL — {len(findings)} finding(s):")
+        for x in findings:
+            print(f"  {x}")
+        sys.exit(1)
+    n_entities = len(docs_of)
+    n_events = sum(1 for i in defined if i.startswith('event.'))
+    print(f"OK — {len(canon_files)} canon files, {n_entities} entities, "
+          f"{n_events} events, {len(defined)} IDs, all checks passed"
+          + ("" if HAVE_JSONSCHEMA else "  (jsonschema not installed — schema pass SKIPPED)"))
+
+
+if __name__ == "__main__":
+    main()

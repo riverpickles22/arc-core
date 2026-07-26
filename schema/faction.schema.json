@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/faction.schema.json",
+  "title": "arc faction / organization / group",
+  "type": "object",
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/factionId" },
+    "type": { "const": "faction" },
+    "name": { "type": "string" },
+    "aliases": { "type": "array", "items": { "type": "string" } },
+    "kind": { "enum": ["faction", "organization", "government", "movement", "pack", "family"] },
+    "status": { "$ref": "common.schema.json#/$defs/status" },
+    "real": { "type": "boolean" },
+    "span": { "$ref": "common.schema.json#/$defs/span" },
+    "summary": { "type": "string" },
+    "goals": { "type": "array", "items": { "type": "string" } },
+    "tags": { "$ref": "common.schema.json#/$defs/tags" },
+    "grounding": { "$ref": "common.schema.json#/$defs/grounding" },
+    "narrative_notes": { "type": "string" },
+    "states": {
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/state" }
+    }
+  },
+  "required": ["id", "type", "name", "kind", "status", "summary"],
+  "additionalProperties": false
+}

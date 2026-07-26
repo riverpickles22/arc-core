@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/common.schema.json",
+  "title": "arc common definitions",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z]+\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$"
+    },
+    "charId": { "type": "string", "pattern": "^char\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+    "placeId": { "type": "string", "pattern": "^place\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+    "factionId": { "type": "string", "pattern": "^faction\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+    "objectId": { "type": "string", "pattern": "^obj\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+    "eventId": { "type": "string", "pattern": "^event\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+    "eraId": { "type": "string", "pattern": "^era\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+    "timepointId": { "type": "string", "pattern": "^tp\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+    "relationshipId": { "type": "string", "pattern": "^rel\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+    "entityId": {
+      "description": "Any entity that can participate in events/relationships",
+      "anyOf": [
+        { "$ref": "#/$defs/charId" },
+        { "$ref": "#/$defs/placeId" },
+        { "$ref": "#/$defs/factionId" },
+        { "$ref": "#/$defs/objectId" }
+      ]
+    },
+    "date": {
+      "description": "ISO-8601 with reduced precision: 1959, 1959-01, 1959-01-01",
+      "type": "string",
+      "pattern": "^\\d{4}(-\\d{2}(-\\d{2})?)?$"
+    },
+    "timeref": {
+      "description": "A point in story-time, anchored to an era",
+      "type": "object",
+      "properties": {
+        "era": { "$ref": "#/$defs/eraId" },
+        "date": { "$ref": "#/$defs/date" },
+        "timepoint": { "$ref": "#/$defs/timepointId" },
+        "precision": { "enum": ["year", "month", "day"] },
+        "approximate": { "type": "boolean" },
+        "note": { "type": "string" }
+      },
+      "required": ["era"],
+      "additionalProperties": false
+    },
+    "span": {
+      "description": "A time interval; start/end are timerefs or bare dates",
+      "type": "object",
+      "properties": {
+        "start": { "$ref": "#/$defs/timerefOrDate" },
+        "end": { "$ref": "#/$defs/timerefOrDate" }
+      },
+      "additionalProperties": false
+    },
+    "timerefOrDate": {
+      "anyOf": [
+        { "$ref": "#/$defs/timeref" },
+        { "$ref": "#/$defs/date" },
+        {
+          "type": "object",
+          "properties": {
+            "date": { "$ref": "#/$defs/date" },
+            "precision": { "enum": ["year", "month", "day"] },
+            "approximate": { "type": "boolean" },
+            "note": { "type": "string" }
+          },
+          "required": ["date"],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "status": {
+      "description": "Canon lifecycle; promotion to canon is an explicit authorial act",
+      "enum": ["proposed", "canon", "deprecated"]
+    },
+    "grounding": {
+      "description": "Research topic slugs (research/topics/<slug>.md) grounding this record",
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "subjectiveRelationship": {
+      "description": "How the entity perceives another entity at this state's timepoint",
+      "type": "object",
+      "properties": {
+        "toward": { "$ref": "#/$defs/entityId" },
+        "stance": { "type": "string" }
+      },
+      "required": ["toward", "stance"],
+      "additionalProperties": false
+    },
+    "state": {
+      "description": "A versioned state snapshot; latest snapshot at-or-before T is authoritative at T",
+      "type": "object",
+      "properties": {
+        "at": { "$ref": "#/$defs/timeref" },
+        "caused_by": { "type": "array", "items": { "$ref": "#/$defs/eventId" } },
+        "age": { "type": "number", "minimum": 0 },
+        "location": { "$ref": "#/$defs/placeId" },
+        "condition": { "type": "string" },
+        "psychology": { "type": "string" },
+        "beliefs": { "type": "array", "items": { "type": "string" } },
+        "relationships": { "type": "array", "items": { "$ref": "#/$defs/subjectiveRelationship" } },
+        "possessions": { "type": "array", "items": { "$ref": "#/$defs/objectId" } },
+        "controlled_by": { "$ref": "#/$defs/entityId" },
+        "note": { "type": "string" }
+      },
+      "required": ["at"],
+      "additionalProperties": false
+    }
+  }
+}

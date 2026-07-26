@@ -1,0 +1,22 @@
+id: event.the-wreck
+type: event
+scope: story
+status: canon
+title: The Aurelia strikes the shoal
+when: { era: era.after-the-wreck, timepoint: tp.the-storm, date: "1911-01-14", precision: day }
+where: place.whitcombe-light
+participants:
+  - { entity: char.ines, role: keeper }
+  - { entity: char.wren, role: first into the water }
+summary: >
+  A coastal steamer misreads the light in driving snow and grounds on the
+  shoal a half-mile out. Ines works the lamp and the line from the point;
+  Wren goes into the surf without being sent. Nine of nineteen aboard reach
+  the cottage; the rest do not.
+causes: []
+leads_to: []
+on_page: true
+grounding: [lighthouse-keeping]
+narrative_notes: >
+  The count matters and should not soften: nine saved is also ten lost. The
+  chapter should not let the rescue read as a win.

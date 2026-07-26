@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/object.schema.json",
+  "title": "arc significant object",
+  "type": "object",
+  "properties": {
+    "id": { "$ref": "common.schema.json#/$defs/objectId" },
+    "type": { "const": "object" },
+    "name": { "type": "string" },
+    "status": { "$ref": "common.schema.json#/$defs/status" },
+    "summary": { "type": "string" },
+    "significance": { "type": "string", "description": "why this object matters to the story" },
+    "created": { "$ref": "common.schema.json#/$defs/timerefOrDate" },
+    "destroyed": { "$ref": "common.schema.json#/$defs/timerefOrDate" },
+    "tags": { "$ref": "common.schema.json#/$defs/tags" },
+    "grounding": { "$ref": "common.schema.json#/$defs/grounding" },
+    "narrative_notes": { "type": "string" },
+    "states": {
+      "description": "Custody/location over time via location + controlled_by",
+      "type": "array",
+      "items": { "$ref": "common.schema.json#/$defs/state" }
+    }
+  },
+  "required": ["id", "type", "name", "status", "summary", "significance"],
+  "additionalProperties": false
+}

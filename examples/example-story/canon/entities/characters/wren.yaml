@@ -1,0 +1,43 @@
+id: char.wren
+type: character
+name: Wren
+species: dog
+status: canon
+born: { era: era.before-the-point, date: "1906", precision: year, approximate: true }
+summary: >
+  A rough-coated harbor dog who followed the supply boat up the point in 1908
+  and never went back down it. Ines's only company and, on the night of the
+  wreck, the first one into the water.
+appearance: >
+  Waist-high, brindle, one ear that never came up. Salt-stiff coat that smells
+  of the lamp room in winter.
+voice: >
+  (Behavioral signature) Reads the weather off Ines rather than the sky —
+  when she starts up the stairs early, he is already at the landing.
+tags: [protagonist, dog]
+grounding: [lighthouse-keeping]
+narrative_notes: >
+  Wren must not be given interiority the prose can't earn. His decisions read
+  from the outside only: what he does, and how long it takes him to do it.
+
+states:
+  - at: { era: era.keeping, date: "1910", precision: year }
+    age: 4
+    location: place.whitcombe-light
+    condition: sound, thick-coated, fat on fish scraps
+    psychology: >
+      A life of total predictability, which suits him. Knows the watch
+      schedule better than the keeper does.
+    relationships:
+      - { toward: char.ines, stance: "his person; the axis everything else turns on" }
+
+  - at: { era: era.after-the-wreck, date: "1911-01", precision: month }
+    caused_by: [event.the-wreck]
+    age: 5
+    location: place.whitcombe-light
+    condition: lame in the right hind leg; coat coming out in patches
+    psychology: >
+      Went into the surf four times and came out three carrying something.
+      Afterward will not go past the tide line, and cannot be coaxed to.
+    relationships:
+      - { toward: char.ines, stance: "unchanged toward her; changed toward the water" }

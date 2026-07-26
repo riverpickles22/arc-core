@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/relationship.schema.json",
+  "title": "arc objective relationship edges (canon/relationships.yaml)",
+  "type": "object",
+  "properties": {
+    "relationships": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "common.schema.json#/$defs/relationshipId" },
+          "type": { "const": "relationship" },
+          "kind": {
+            "description": "Objective edge kinds; subjective perception lives in character states",
+            "enum": [
+              "family", "owner-pet", "companion-animal", "guardian", "mentor",
+              "friend", "member-of", "controls", "employs", "ally", "enemy", "rival",
+              "successor-of"
+            ]
+          },
+          "status": { "$ref": "common.schema.json#/$defs/status" },
+          "from": { "$ref": "common.schema.json#/$defs/entityId" },
+          "to": { "$ref": "common.schema.json#/$defs/entityId" },
+          "directed": { "type": "boolean" },
+          "span": { "$ref": "common.schema.json#/$defs/span" },
+          "summary": { "type": "string" }
+        },
+        "required": ["id", "type", "kind", "status", "from", "to", "directed", "summary"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["relationships"],
+  "additionalProperties": false
+}

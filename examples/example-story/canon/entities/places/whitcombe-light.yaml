@@ -1,0 +1,30 @@
+id: place.whitcombe-light
+type: place
+name: Whitcombe Light
+kind: landmark
+status: canon
+real: false
+coordinates: { lat: 54.2, lon: -4.8 }
+summary: >
+  A first-order light and its keeper's cottage on a basalt point, four miles
+  of cart track from the nearest village. The shoal it warns of runs a
+  half-mile out and takes a ship roughly once a decade.
+sensory: >
+  Wind that never fully stops, so its stopping is the alarming thing. Paraffin
+  and brass polish in the lamp room; damp wool and peat smoke below. Ninety-one
+  stairs, and the eighty-fourth is loose.
+tags: [primary-setting]
+grounding: [lighthouse-keeping]
+narrative_notes: >
+  Invented, not real — `real: false`. Composited from northern-coast stations
+  of the period; see research/topics/lighthouse-keeping.md for what the
+  routine actually involved.
+states:
+  - at: { era: era.keeping }
+    condition: >
+      Well kept and entirely unremarkable. Supply boat monthly, weather
+      permitting; nothing else arrives.
+  - at: { era: era.after-the-wreck }
+    condition: >
+      Two lamp-room panes cracked and boarded pending replacement; the cottage
+      kitchen still holding blankets that belonged to strangers.

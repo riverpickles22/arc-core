@@ -1,0 +1,34 @@
+# Narrative structure laid over the timeline. Chapters are `proposed` until the
+# author actually commits to the shape — see conventions.md on canon lifecycle.
+chapters:
+  - id: ch.01-ninety-one-stairs
+    type: chapter
+    order: 1
+    title: Ninety-One Stairs
+    part: "I — The Keeping"
+    status: proposed
+    span: { start: "1910-11", end: "1910-12" }
+    era: era.keeping
+    pov: char.ines
+    summary: >
+      A month of nothing, rendered as something. The watch, the log, the dog,
+      the loose eighty-fourth stair. Establish the sufficiency of the routine
+      so the storm has something to cost.
+    events: []
+    locations: [place.whitcombe-light]
+
+  - id: ch.02-the-aurelia
+    type: chapter
+    order: 2
+    title: The Aurelia
+    part: "II — The Wreck"
+    status: proposed
+    span: { start: "1911-01-14", end: "1911-01-20" }
+    era: era.after-the-wreck
+    pov: char.ines
+    summary: >
+      The wreck and the six days after it. Strangers in the kitchen; Wren
+      lame by the fire; the keeper counting a number that will not divide
+      cleanly into saved and lost.
+    events: [event.the-wreck]
+    locations: [place.whitcombe-light]

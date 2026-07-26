@@ -1,0 +1,20 @@
+slug: example-story
+title: The Keeper of Whitcombe Light
+logline: >
+  A lighthouse keeper who has spent nine years talking to no one but her dog
+  must decide, on the worst night of a bad winter, whose life the lamp is for.
+genre: literary fiction
+setting: Whitcombe Point, an unnamed northern coast, 1908–1911
+status: material
+protagonists: [char.ines, char.wren]
+themes:
+  - Solitude chosen, then tested
+  - Duty to strangers versus duty to the one who stayed
+pov: >
+  Close third on Ines throughout.
+notes: >
+  This is arc's worked example, not a novel anyone is writing. It is
+  deliberately small — three entities, one event, one relationship — and
+  exists so that `tools/validate.py` and `tools/export-canon.py` have
+  something real to run against, and so a new story can be copied from a
+  known-good shape. See conventions.md for the rules it demonstrates.

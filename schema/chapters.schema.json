@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/chapters.schema.json",
+  "title": "arc chapters (canon/chapters.yaml) — narrative structure over the timeline",
+  "type": "object",
+  "properties": {
+    "chapters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "pattern": "^ch\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
+          "type": { "const": "chapter" },
+          "order": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string" },
+          "part": { "type": "string", "description": "narrative part/act grouping" },
+          "status": { "$ref": "common.schema.json#/$defs/status" },
+          "span": { "$ref": "common.schema.json#/$defs/span" },
+          "era": { "$ref": "common.schema.json#/$defs/eraId" },
+          "pov": { "$ref": "common.schema.json#/$defs/charId" },
+          "summary": { "type": "string" },
+          "events": {
+            "description": "events dramatized or backdropped in this chapter",
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/eventId" }
+          },
+          "locations": {
+            "type": "array",
+            "items": { "$ref": "common.schema.json#/$defs/placeId" }
+          },
+          "notes": { "type": "string" }
+        },
+        "required": ["id", "type", "order", "title", "status", "span", "summary"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": ["chapters"],
+  "additionalProperties": false
+}
