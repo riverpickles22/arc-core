@@ -95,6 +95,13 @@ Promotion `proposed → canon` is an explicit authorial act, never a side effect
 
 A story is a self-contained directory — `canon/`, `docs/`, `research/`, `prose/`, and a `CLAUDE.md` describing its agent workflow. It may live anywhere: its own repository, a sibling checkout, or a subdirectory of arc-core (as `examples/example-story` does). Nothing in arc-core is story-specific, and nothing in a story repeats what arc-core defines.
 
+A story may also carry its own presentation, which is **not canon** and is not validated:
+
+- `assets/` — files an app draws, such as a basemap coastline.
+- `view.yaml` — how the story is drawn: which basemap to use, and an optional map inset for a dense cluster of places.
+
+Both are optional. Apps derive what they can from canon — the map fits itself to the coordinates of `place` entities, and character colours follow `story.protagonists` — so presentation config only records the editorial choices canon cannot imply. These live with the story rather than with the app so that an app serves *any* story, not one of them.
+
 The tools take a story path as an argument and resolve schemas relative to arc-core, so the two never need to share a working tree:
 
 ```
