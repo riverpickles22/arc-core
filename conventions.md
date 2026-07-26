@@ -15,23 +15,25 @@ On any conflict: **canon > docs > prose > conversation**. Prose must never contr
 
 Every canonical thing has a stable ID: `type.slug`, kebab-case, optionally hierarchical with dots.
 
+Examples below are drawn from the world of `examples/example-story`.
+
 | Prefix | Type | Examples |
 |---|---|---|
-| `char.` | character (humans *and* animals) | `char.carlos`, `char.diego` |
-| `place.` | place (hierarchy via dots) | `place.havana`, `place.havana.habana-vieja` |
-| `faction.` | faction / organization / group | `faction.m-26-7`, `faction.feral-pack` |
-| `obj.` | significant object | `obj.photo-carlos-diego` |
-| `event.` | event (story or historical) | `event.parents-executed` |
-| `era.` | timeline era | `era.special-period` |
-| `tp.` | named timepoint (anchor) | `tp.triumph` |
-| `rel.` | objective relationship edge | `rel.carlos-diego` |
-| `ch.` | chapter (narrative structure) | `ch.05-the-denunciation` |
+| `char.` | character (humans *and* animals) | `char.ines`, `char.wren` |
+| `place.` | place (hierarchy via dots) | `place.whitcombe-light`, `place.whitcombe-light.lamp-room` |
+| `faction.` | faction / organization / group | `faction.lighthouse-board` |
+| `obj.` | significant object | `obj.keepers-log` |
+| `event.` | event (story or historical) | `event.the-wreck` |
+| `era.` | timeline era | `era.after-the-wreck` |
+| `tp.` | named timepoint (anchor) | `tp.the-storm` |
+| `rel.` | objective relationship edge | `rel.ines-wren` |
+| `ch.` | chapter (narrative structure) | `ch.02-the-aurelia` |
 
 Regex: `^[a-z]+\.[a-z0-9-]+(\.[a-z0-9-]+)*$`
 
 Rules:
 - IDs are permanent. Renaming an entity changes its `name`, never its ID.
-- The file for `char.carlos` is `canon/entities/characters/carlos.yaml`; for `place.havana.habana-vieja` it is `canon/entities/places/havana.habana-vieja.yaml` (full dotted slug as filename).
+- The file for `char.ines` is `canon/entities/characters/ines.yaml`; for `place.whitcombe-light.lamp-room` it is `canon/entities/places/whitcombe-light.lamp-room.yaml` (full dotted slug as filename).
 - Before minting an ID, grep for collisions: `grep -rn "char.new-slug" canon docs`.
 - When you mint an entity, create its YAML file and its docs article stub together.
 
@@ -79,10 +81,10 @@ Promotion `proposed → canon` is an explicit authorial act, never a side effect
 
 ## 7. Cross-referencing
 
-- Markdown → canon: wikilinks containing full IDs — `[[char.carlos]]`, or labeled `[[char.diego|Diego]]`. Greppable via `\[\[[a-z]+\.`.
-- Docs articles bind to their entity with frontmatter: `canon: char.carlos`. One article per entity, path mirroring `canon/entities/`.
-- Canon → research: a `grounding:` list of research topic slugs (`grounding: [havana-1950s]`) pointing at `research/topics/<slug>.md`.
-- Research claims cite `research/sources.yaml` keys inline: `[@mesa-lago-1994]`.
+- Markdown → canon: wikilinks containing full IDs — `[[char.ines]]`, or labeled `[[char.wren|the dog]]`. Greppable via `\[\[[a-z]+\.`.
+- Docs articles bind to their entity with frontmatter: `canon: char.ines`. One article per entity, path mirroring `canon/entities/`.
+- Canon → research: a `grounding:` list of research topic slugs (`grounding: [lighthouse-keeping]`) pointing at `research/topics/<slug>.md`.
+- Research claims cite `research/sources.yaml` keys inline: `[@example-keeper-manual]`.
 - Docs sections not yet grounded carry a machine-findable marker: `> TODO(research: <topic-slug>)`.
 
 ## 8. Files and validation
