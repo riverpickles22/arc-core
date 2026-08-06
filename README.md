@@ -28,10 +28,11 @@ Every arc story has the same three layers:
 ```
 conventions.md        The constitution: IDs, dates, linking, canon discipline
 schema/               JSON Schemas (2020-12) that validate canon YAML
-templates/            Markdown skeletons for docs
+templates/            Markdown skeletons for docs, and a story's CLAUDE.md
 tools/validate.py     Schema conformance + referential integrity
 tools/export-canon.py Canon YAML -> one JSON graph, for any app
 examples/example-story/  A small, valid, complete story to copy from
+.claude/skills/arc-canon/  A Claude Code skill for working canon from the terminal
 ```
 
 ## Setup
@@ -52,6 +53,23 @@ Both tools take a **path to a story directory**. The story can live anywhere —
 ```
 
 `validate.py` exits 0 when clean and 1 with a list of findings otherwise, which makes it usable as a pre-commit hook or CI gate on a story repo. It checks schema conformance, that every referenced ID resolves, that every `[[wikilink]]` in docs resolves, that every entity has a docs article, that every timeref falls inside its declared era, that every grounding slug names a real research topic, and that every `[@citation]` is registered in `sources.yaml`.
+
+## Working from Claude Code
+
+`.claude/skills/arc-canon/` packages this same discipline — read
+`conventions.md`, locate a story, query the graph, write through the
+validator — as a Claude Code skill, so a terminal session can read and
+reshape canon without `arc-frontend` or `arc-backend` running. It holds
+itself to the same rules as `arc-backend`'s embedded chat agent (new facts
+land as `status: proposed` unless the author ratifies them); the two are
+peers, not a UI path and a lesser one.
+
+The skill lives here because it's story-agnostic, same as everything else in
+this repo. It's discovered when a Claude Code session's working tree includes
+`arc-core` — reliably so if you `cd` into it or a workspace root above it.
+From inside a story's own repo, where `arc-core` is a sibling rather than an
+ancestor, it may not surface; that story's `CLAUDE.md` (see `templates/`)
+should point back at `conventions.md` directly as a fallback.
 
 ## Starting a story
 
