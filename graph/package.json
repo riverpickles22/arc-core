@@ -1,0 +1,11 @@
+{
+  "name": "arc-canon-graph",
+  "version": "0.1.0",
+  "description": "The query layer over an arc canon export: the date-ordering rule, projectAt(T), neighbors, orphans, diff. No dependencies, no build step.",
+  "type": "module",
+  "main": "canon-graph.ts",
+  "types": "canon-graph.ts",
+  "scripts": {
+    "test": "node --experimental-strip-types test-vectors.ts"
+  }
+}

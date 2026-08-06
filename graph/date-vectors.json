@@ -1,0 +1,29 @@
+{
+  "comment": "THE date-ordering rule, specified once. dk(date, end) in graph/canon-graph.ts must yield y*10000+m*100+d; date_key/date_key_end in tools/validate.py must yield (y, m, d). Missing parts snap to the start (end=false) or end (end=true) of the period. End keys are ordering keys, not calendar dates: every month end-snaps to day 31 by rule, which orders correctly and keeps both implementations trivially identical. Run: npm test (graph/) and python3 tools/test_date_vectors.py.",
+  "vectors": [
+    { "date": "1959",       "end": false, "y": 1959, "m": 1,  "d": 1  },
+    { "date": "1959",       "end": true,  "y": 1959, "m": 12, "d": 31 },
+    { "date": "1959-03",    "end": false, "y": 1959, "m": 3,  "d": 1  },
+    { "date": "1959-03",    "end": true,  "y": 1959, "m": 3,  "d": 31 },
+    { "date": "1959-02",    "end": true,  "y": 1959, "m": 2,  "d": 31 },
+    { "date": "1959-02",    "end": false, "y": 1959, "m": 2,  "d": 1  },
+    { "date": "1959-03-15", "end": false, "y": 1959, "m": 3,  "d": 15 },
+    { "date": "1959-03-15", "end": true,  "y": 1959, "m": 3,  "d": 15 },
+    { "date": "1947-06-14", "end": false, "y": 1947, "m": 6,  "d": 14 },
+    { "date": "1990",       "end": false, "y": 1990, "m": 1,  "d": 1  },
+    { "date": "1990-01-01", "end": false, "y": 1990, "m": 1,  "d": 1  },
+    { "date": "1994-08",    "end": true,  "y": 1994, "m": 8,  "d": 31 },
+    { "date": "1900",       "end": true,  "y": 1900, "m": 12, "d": 31 },
+    { "date": "2001-12",    "end": false, "y": 2001, "m": 12, "d": 1  },
+    { "date": "2001-12-31", "end": true,  "y": 2001, "m": 12, "d": 31 }
+  ],
+  "orderings": {
+    "comment": "Sanity assertions both runners also check: start-of-period keys order before contained full dates; end-of-period keys order after them.",
+    "pairs": [
+      { "a": { "date": "1959", "end": false }, "before": { "date": "1959-03-15", "end": false } },
+      { "a": { "date": "1959-03-15", "end": false }, "before": { "date": "1959", "end": true } },
+      { "a": { "date": "1959-02", "end": true }, "before": { "date": "1959-03", "end": false } },
+      { "a": { "date": "1958", "end": true }, "before": { "date": "1959", "end": false } }
+    ]
+  }
+}
