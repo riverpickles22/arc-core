@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """arc canon validator.
 
-Usage: python3 tools/validate.py <path-to-story>
+Usage: python3 tools/validate.py [--skip-schema] <path-to-story>
+
+The schema-conformance pass requires the jsonschema package; without it the
+validator fails loudly rather than passing silently. --skip-schema runs the
+other checks without it — and says so in the output.
 
 The story may live anywhere — its own repo, a sibling checkout, a subdirectory
 of this one. Only the schemas are resolved relative to arc-core.
@@ -106,9 +110,17 @@ def walk_ids(node, path, collect):
 
 
 def main():
-    if len(sys.argv) != 2:
+    args = sys.argv[1:]
+    skip_schema = "--skip-schema" in args
+    args = [a for a in args if a != "--skip-schema"]
+    if len(args) != 1:
         sys.exit(__doc__)
-    story_dir = Path(sys.argv[1]).resolve()
+    if not HAVE_JSONSCHEMA and not skip_schema:
+        sys.exit("FAIL — the schema pass needs the jsonschema package, which is not installed.\n"
+                 "  install it:            pip install jsonschema referencing\n"
+                 "  or skip schema checks: validate.py --skip-schema <path-to-story>")
+    use_schema = HAVE_JSONSCHEMA and not skip_schema
+    story_dir = Path(args[0]).resolve()
     if not (story_dir / "canon").is_dir():
         sys.exit(f"not a story directory (no canon/): {story_dir}")
     canon_dir = story_dir / "canon"
@@ -118,7 +130,7 @@ def main():
     # --- load schemas
     registry = None
     schemas = {}
-    if HAVE_JSONSCHEMA:
+    if use_schema:
         resources = []
         for sf in SCHEMA_DIR.glob("*.schema.json"):
             data = json.loads(sf.read_text())
@@ -140,7 +152,7 @@ def main():
             flag(f, "no schema mapping for this file location")
             continue
         # schema validation
-        if HAVE_JSONSCHEMA and name in schemas:
+        if use_schema and name in schemas:
             validator = jsonschema.Draft202012Validator(schemas[name], registry=registry)
             for err in validator.iter_errors(data):
                 flag(f, f"schema: {'/'.join(str(p) for p in err.path)}: {err.message[:200]}")
@@ -246,6 +258,8 @@ def main():
                     flag(f, f"citation key not in sources.yaml: [@{m.group(1)}]")
 
     # --- report
+    if not use_schema:
+        print("⚠ schema pass SKIPPED (--skip-schema) — schema conformance was NOT checked")
     if findings:
         print(f"FAIL — {len(findings)} finding(s):")
         for x in findings:
@@ -254,8 +268,7 @@ def main():
     n_entities = len(docs_of)
     n_events = sum(1 for i in defined if i.startswith('event.'))
     print(f"OK — {len(canon_files)} canon files, {n_entities} entities, "
-          f"{n_events} events, {len(defined)} IDs, all checks passed"
-          + ("" if HAVE_JSONSCHEMA else "  (jsonschema not installed — schema pass SKIPPED)"))
+          f"{n_events} events, {len(defined)} IDs, all checks passed")
 
 
 if __name__ == "__main__":
