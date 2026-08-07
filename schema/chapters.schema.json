@@ -11,7 +11,7 @@
         "properties": {
           "id": { "type": "string", "pattern": "^ch\\.[a-z0-9-]+(\\.[a-z0-9-]+)*$" },
           "type": { "const": "chapter" },
-          "order": { "type": "integer", "minimum": 1 },
+          "order": { "type": "integer", "minimum": 0, "description": "Reading order. 0 is front matter (a prologue); numbered chapters start at 1." },
           "title": { "type": "string" },
           "part": { "type": "string", "description": "narrative part/act grouping" },
           "status": { "$ref": "common.schema.json#/$defs/status" },
