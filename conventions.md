@@ -112,3 +112,48 @@ python3 tools/export-canon.py ../my-story
 ```
 
 New stories copy `templates/` and the shape of `examples/example-story`. They never fork the schema — a story that needs a schema change needs it in arc-core, for everyone.
+
+## 10. Prose and scenes (the binding)
+
+Prose lives in `prose/`, one directory per chapter, one file per scene:
+
+```
+prose/
+├── ch-00/
+│   └── scene-01.md
+└── ch-01/
+    ├── scene-01.md
+    └── scene-02.md
+```
+
+**The scene is the unit that binds prose to canon.** Each scene file opens
+with YAML frontmatter declaring what the prose rests on; the body below it
+is the manuscript text and nothing else — no markers, no citations, no
+machine syntax in the prose itself.
+
+```markdown
+---
+scene: sc.00-1                 # permanent id: sc.<chapter number>-<n>
+chapter: ch.00-prologue        # must resolve
+status: proposed               # same lifecycle as canon: proposed → canon
+pov: char.carlos               # optional; omit for omniscient
+events: [event.seed-comes-ashore]        # the events this scene narrates
+facts: [place.hollow-tree, char.carlos]  # entities/relationships it rests on
+---
+
+The prose begins here.
+```
+
+Rules:
+
+- Frontmatter ids **must resolve** — the validator checks `chapter`, `pov`,
+  `events`, and `facts` against defined ids, the same way it checks canon.
+- The binding is **invertible**: `tools/scenes.py <story> --fact <id>` lists
+  every scene resting on a fact, which is what lets a canon change mark the
+  prose that depends on it as stale.
+- Scene ids are permanent, like all ids (§2). Scenes are ordered by
+  filename within a chapter.
+- Passage-level granularity, if ever needed, is added *inside* a scene
+  later — the scene remains the binding unit; nothing here would migrate.
+- On conflict, canon wins over prose (§1). A scene whose frontmatter is
+  honest makes that conflict findable.

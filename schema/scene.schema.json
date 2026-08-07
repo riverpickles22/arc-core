@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "scene.schema.json",
+  "title": "Scene frontmatter",
+  "description": "The prose-to-canon binding: YAML frontmatter at the top of a prose/ch-XX/scene-NN.md file. The scene is the binding unit (conventions.md §10).",
+  "type": "object",
+  "properties": {
+    "scene": { "type": "string", "pattern": "^sc\\.[a-z0-9-]+$" },
+    "chapter": { "type": "string", "pattern": "^ch\\.[a-z0-9.-]+$" },
+    "status": { "enum": ["proposed", "canon", "deprecated"] },
+    "pov": { "type": "string", "pattern": "^char\\.[a-z0-9.-]+$" },
+    "events": { "type": "array", "items": { "type": "string", "pattern": "^event\\.[a-z0-9.-]+$" } },
+    "facts": { "type": "array", "items": { "type": "string", "pattern": "^(char|place|faction|obj|rel)\\.[a-z0-9.-]+$" } },
+    "span": { "type": "object" },
+    "note": { "type": "string" }
+  },
+  "required": ["scene", "chapter", "status"],
+  "additionalProperties": false
+}

@@ -247,6 +247,31 @@ def main():
         if eid not in articles:
             flag(docs_of[eid], f"entity {eid} has no docs article")
 
+    # --- pass 3.5: prose — scene frontmatter binding (conventions §10)
+    prose_dir = story_dir / "prose"
+    scene_ids = set()
+    if prose_dir.is_dir():
+        for f in sorted(prose_dir.rglob("*.md")):
+            text = f.read_text()
+            fm = re.match(r"^---\n(.*?)\n---\n", text, re.S)
+            if not fm:
+                continue   # READMEs and unbound drafts are allowed
+            meta = yaml.safe_load(fm.group(1)) or {}
+            if "scene" not in meta:
+                continue
+            if use_schema and "scene" in schemas:
+                validator = jsonschema.Draft202012Validator(schemas["scene"], registry=registry)
+                for err in validator.iter_errors(meta):
+                    flag(f, f"scene frontmatter: {'/'.join(str(p) for p in err.path)}: {err.message[:200]}")
+            sid = meta.get("scene")
+            if sid in scene_ids:
+                flag(f, f"duplicate scene id {sid}")
+            scene_ids.add(sid)
+            for ref in [meta.get("chapter"), meta.get("pov"),
+                        *(meta.get("events") or []), *(meta.get("facts") or [])]:
+                if ref and ref not in defined:
+                    flag(f, f"scene {sid}: unresolved binding id: {ref}")
+
     # --- pass 4: research citations
     src_file = research_dir / "sources.yaml"
     if src_file.exists():
