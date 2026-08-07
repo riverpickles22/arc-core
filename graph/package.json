@@ -6,6 +6,6 @@
   "main": "canon-graph.ts",
   "types": "canon-graph.ts",
   "scripts": {
-    "test": "node --experimental-strip-types test-vectors.ts"
+    "test": "node --experimental-strip-types test-vectors.ts && node --experimental-strip-types test-reports.ts && node --experimental-strip-types test-checks.ts"
   }
 }

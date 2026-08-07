@@ -1,0 +1,47 @@
+{
+  "comment": "One planted violation per cross-entity check, plus clean twins that must stay quiet. test-checks.ts asserts both directions.",
+  "timeline": { "eras": [ { "id": "era.one", "span": { "start": "1900-01-01", "end": "1999-12-31" } } ] },
+  "entities": {
+    "char.dead":  { "id": "char.dead",  "type": "character", "name": "Dead",  "status": "canon", "born": "1930", "died": "1960",
+      "states": [ { "at": { "era": "era.one", "date": "1965" }, "condition": "state after death — planted span-sanity violation" } ] },
+    "char.one":   { "id": "char.one",   "type": "character", "name": "One",   "status": "canon", "born": "1930",
+      "states": [ { "at": { "era": "era.one", "date": "1950" }, "possessions": ["obj.thing"], "location": "place.a" },
+                  { "at": { "era": "era.one", "date": "1980" }, "location": "place.a" } ] },
+    "char.two":   { "id": "char.two",   "type": "character", "name": "Two",   "status": "canon",
+      "states": [ { "at": { "era": "era.one", "date": "1960" }, "possessions": ["obj.thing"], "location": "place.b" } ] },
+    "char.busy":  { "id": "char.busy",  "type": "character", "name": "Busy",  "status": "canon" },
+    "char.messy": { "id": "char.messy", "type": "character", "name": "Messy", "status": "canon",
+      "states": [ { "at": { "era": "era.one", "date": "1960" } }, { "at": { "era": "era.one", "date": "1950" } } ] },
+    "obj.thing":  { "id": "obj.thing",  "type": "object", "name": "Thing", "status": "canon" },
+    "place.a":    { "id": "place.a",    "type": "place", "name": "A", "status": "canon" },
+    "place.b":    { "id": "place.b",    "type": "place", "name": "B", "status": "canon" },
+    "place.b.inner": { "id": "place.b.inner", "type": "place", "name": "Inner B", "status": "canon", "part_of": "place.b" }
+  },
+  "events": {
+    "event.after-death": { "id": "event.after-death", "status": "canon", "when": { "era": "era.one", "date": "1970-05-01" },
+      "participants": [ { "entity": "char.dead" } ], "summary": "planted lifespan violation, precise date" },
+    "event.effect": { "id": "event.effect", "status": "canon", "when": { "era": "era.one", "date": "1950-01-01" },
+      "causes": ["event.late-cause"], "summary": "planted causality violation" },
+    "event.late-cause": { "id": "event.late-cause", "status": "canon", "when": { "era": "era.one", "date": "1960-01-01" } },
+    "event.loop-x": { "id": "event.loop-x", "status": "canon", "when": { "era": "era.one", "date": "1940" }, "leads_to": ["event.loop-y"] },
+    "event.loop-y": { "id": "event.loop-y", "status": "canon", "when": { "era": "era.one", "date": "1941" }, "leads_to": ["event.loop-x"] },
+    "event.here":  { "id": "event.here",  "status": "canon", "when": { "era": "era.one", "date": "1955-06-01" },
+      "where": "place.a", "participants": [ { "entity": "char.busy" } ] },
+    "event.there": { "id": "event.there", "status": "canon", "when": { "era": "era.one", "date": "1955-06-01" },
+      "where": "place.b", "participants": [ { "entity": "char.busy" } ] },
+    "event.nested-ok": { "id": "event.nested-ok", "status": "canon", "when": { "era": "era.one", "date": "1955-06-01" },
+      "where": "place.b.inner", "participants": [ { "entity": "char.busy" } ] },
+    "event.canonical": { "id": "event.canonical", "status": "canon", "when": { "era": "era.one", "date": "1958" },
+      "causes": ["event.tentative"], "summary": "planted lifecycle violation: canon leaning on proposed" },
+    "event.tentative": { "id": "event.tentative", "status": "proposed", "when": { "era": "era.one", "date": "1957" } }
+  },
+  "relationships": [
+    { "id": "rel.early", "kind": "friend", "status": "canon", "from": "char.one", "to": "char.two", "directed": false,
+      "span": { "start": "1900" }, "summary": "planted span-sanity: starts before char.one exists (born 1930)" },
+    { "id": "rel.dep", "kind": "ally", "status": "deprecated", "from": "char.one", "to": "char.busy", "directed": false,
+      "summary": "planted lifecycle: deprecated without superseded_by" },
+    { "id": "rel.fine", "kind": "ally", "status": "canon", "from": "char.one", "to": "char.two", "directed": false,
+      "span": { "start": "1961" }, "summary": "clean twin — inside both lifespans, must not be flagged" }
+  ],
+  "chapters": []
+}

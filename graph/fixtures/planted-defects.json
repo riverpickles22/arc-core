@@ -1,0 +1,34 @@
+{
+  "comment": "Hand-built fixture with one KNOWN planted defect per report class. test-reports.ts asserts each is found — and that the clean counterparts are not flagged.",
+  "timeline": { "eras": [ { "id": "era.one", "span": { "start": "1900-01-01", "end": "1999-12-31" } } ] },
+  "entities": {
+    "char.hero":   { "id": "char.hero",   "type": "character", "name": "Hero" },
+    "char.friend": { "id": "char.friend", "type": "character", "name": "Friend" },
+    "char.ghost":  { "id": "char.ghost",  "type": "character", "name": "Ghost" },
+    "place.town":  { "id": "place.town",  "type": "place", "name": "Town" }
+  },
+  "events": {
+    "event.meeting": {
+      "id": "event.meeting", "when": { "era": "era.one", "date": "1950" }, "where": "place.town",
+      "participants": [ { "entity": "char.friend" } ], "on_page": true,
+      "leads_to": ["event.offpage-payoff"]
+    },
+    "event.offpage-payoff": {
+      "id": "event.offpage-payoff", "when": { "era": "era.one", "date": "1951" },
+      "participants": [ { "entity": "char.friend" } ], "on_page": false
+    },
+    "event.stranded": {
+      "id": "event.stranded", "when": { "era": "era.one", "date": "1952" },
+      "participants": [ { "entity": "char.hero" } ], "on_page": true
+    }
+  },
+  "relationships": [
+    { "id": "rel.unexplained-end", "kind": "friend", "from": "char.hero", "to": "char.friend",
+      "directed": false, "span": { "start": "1940", "end": "1960" }, "summary": "ends with no event near 1960" },
+    { "id": "rel.open", "kind": "ally", "from": "char.hero", "to": "char.friend",
+      "directed": false, "summary": "no end — should not be flagged" }
+  ],
+  "chapters": [
+    { "id": "ch.one", "order": 1, "pov": "char.hero", "events": ["event.meeting"], "span": { "start": "1950", "end": "1950" } }
+  ]
+}
