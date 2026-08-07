@@ -29,8 +29,12 @@ Every arc story has the same three layers:
 conventions.md        The constitution: IDs, dates, linking, canon discipline
 schema/               JSON Schemas (2020-12) that validate canon YAML
 templates/            Markdown skeletons for docs, and a story's CLAUDE.md
-tools/validate.py     Schema conformance + referential integrity
+tools/validate.py     Schema conformance + referential integrity + scene bindings
 tools/export-canon.py Canon YAML -> one JSON graph, for any app
+tools/scenes.py       The prose binding, inverted: which scenes rest on a fact
+graph/                The query layer over the export (TypeScript, zero-dep):
+                      the date-ordering rule, projectAt(T), neighbors, orphans,
+                      diff, the six cross-entity checks, and three CLIs
 examples/example-story/  A small, valid, complete story to copy from
 .claude/skills/arc-canon/  A Claude Code skill for working canon from the terminal
 ```
@@ -52,7 +56,16 @@ Both tools take a **path to a story directory**. The story can live anywhere —
 .venv/bin/python tools/export-canon.py ../my-story out/canon.json    # or to a file
 ```
 
-`validate.py` exits 0 when clean and 1 with a list of findings otherwise, which makes it usable as a pre-commit hook or CI gate on a story repo. It checks schema conformance, that every referenced ID resolves, that every `[[wikilink]]` in docs resolves, that every entity has a docs article, that every timeref falls inside its declared era, that every grounding slug names a real research topic, and that every `[@citation]` is registered in `sources.yaml`.
+`validate.py` exits 0 when clean and 1 with a list of findings otherwise, which makes it usable as a pre-commit hook or CI gate on a story repo. It checks schema conformance, that every referenced ID resolves, that every `[[wikilink]]` in docs resolves, that every entity has a docs article, that every timeref falls inside its declared era, that every grounding slug names a real research topic, that every `[@citation]` is registered in `sources.yaml`, and that every prose scene's frontmatter binding resolves (conventions §10). A missing `jsonschema` package is a hard failure — `--skip-schema` runs the other checks and says so loudly.
+
+The **graph layer** (`graph/`, Node 22+) works on the export JSON — the date-ordering rule lives here once, held to `graph/date-vectors.json` in both languages (`npm test` in `graph/`, `tools/test_date_vectors.py`):
+
+```sh
+.venv/bin/python tools/export-canon.py ../my-story - |
+  node --experimental-strip-types graph/briefing.ts -            # reports + the six continuity checks (--strict for pre-commit)
+  node --experimental-strip-types graph/context-pack.ts - --chapter ch.10   # auditable drafting bundle
+  node --experimental-strip-types graph/cli.ts - --at 1959 --orphans        # projection, neighbors, diff
+```
 
 ## Working from Claude Code
 
