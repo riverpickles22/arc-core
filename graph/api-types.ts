@@ -53,6 +53,11 @@ export interface ProseResponse { scenes: ProseScene[] }
 export interface ProseAcceptRequest { message?: string; capture?: boolean }
 export interface ProseAcceptResponse { hash: string; files: string[]; capture?: ChatResponse }
 export interface ProseDiscardRequest { file: string }
+/** The drafting pass (/api/prose/draft-scene): generation into the working
+ *  tree. The result is an ordinary draft — reviewed, accepted, or discarded
+ *  through the existing draft layer; arc never ratifies its own prose. */
+export interface DraftSceneRequest { chapter: string; guidance?: string }
+export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file: string | null }
 export interface OkResponse { ok: true }
 export interface ApiErrorResponse { error: string }
 export interface HealthResponse { ok: boolean; validator: string }
