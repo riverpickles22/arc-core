@@ -621,6 +621,29 @@ export class CanonGraph {
     return out.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'error' ? -1 : 1) || a.check.localeCompare(b.check) || a.message.localeCompare(b.message))
   }
 
+  /** A character's world as of T: what they have seen, where they have
+   *  been, whom they have met — and the irony list, the events that have
+   *  happened by T outside their view (what the reader may know that they
+   *  don't). Event-level; fact-level knowledge is the knowledge lint's job. */
+  povView(charId: string, tEnd: number): {
+    seen: string[]; places: string[]; met: string[]; unseen: string[]
+  } {
+    const seen: string[] = []
+    const unseen: string[] = []
+    const places = new Set<string>()
+    const met = new Set<string>()
+    for (const e of Object.values(this.canon.events ?? {})) {
+      if (timeRefKey(e.when, this.eras) > tEnd) continue
+      const present = (e.participants ?? []).some(p => p.entity === charId) || (e.witnesses ?? []).includes(charId)
+      if (!present) { unseen.push(e.id); continue }
+      seen.push(e.id)
+      if (e.where) places.add(e.where)
+      for (const p of e.participants ?? []) if (p.entity !== charId) met.add(p.entity)
+      for (const w of e.witnesses ?? []) if (w !== charId) met.add(w)
+    }
+    return { seen: seen.sort(), places: [...places].sort(), met: [...met].sort(), unseen: unseen.sort() }
+  }
+
   /** The deterministic blast radius: everything that depends on one id,
    *  grouped by how it depends — plus, in the 'asked' register, the payoff
    *  questions the dependency structure surfaces but never answers.

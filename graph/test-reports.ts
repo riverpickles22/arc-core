@@ -26,6 +26,11 @@ const ended = g.endedEdgesWithoutCause()
 expect(ended.some(e => e.id === 'rel.unexplained-end'), 'relationship end without cause: rel.unexplained-end')
 expect(!ended.some(e => e.id === 'rel.open'), 'rel.open (no end) must NOT be flagged')
 
+const view = g.povView('char.hero', 99999999)
+expect(view.seen.includes('event.stranded'), 'povView: hero has seen event.stranded (participant)')
+expect(view.unseen.includes('event.meeting'), 'povView: event.meeting is outside hero\'s view (irony list)')
+expect(!view.seen.includes('event.meeting'), 'povView: seen and unseen are disjoint')
+
 const counts = g.appearanceCounts()
 expect(counts[0]?.id === 'char.ghost' && counts[0].events === 0 && counts[0].chapters === 0,
   'appearance counts: char.ghost quietest with 0/0')
