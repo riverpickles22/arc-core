@@ -86,6 +86,12 @@ Promotion `proposed → canon` is an explicit authorial act, never a side effect
 - Canon → research: a `grounding:` list of research topic slugs (`grounding: [lighthouse-keeping]`) pointing at `research/topics/<slug>.md`.
 - Research claims cite `research/sources.yaml` keys inline: `[@example-keeper-manual]`.
 - Docs sections not yet grounded carry a machine-findable marker: `> TODO(research: <topic-slug>)`.
+- A **reference** hands an exact object between surfaces — the viewer, an
+  agent session, a finding: `<id>`, optionally anchored to a moment with
+  `@` — `char.carlos@ch.10-return` (the world as of that chapter's span
+  end) or `char.carlos@1992` (end of that date). Consumers resolve the
+  anchor with `projectAt`; an unanchored reference means "timeless" (the
+  record itself). The viewer's `⧉ ref` buttons copy this form.
 
 ## 8. Files and validation
 
@@ -207,3 +213,32 @@ order — proven, argued, asked. A tool that presents *argued* with
 *proven*'s confidence is overclaiming; a tool that answers *asked* is
 writing the book. The `Register` type lives in `graph/canon-graph.ts`
 beside `Finding`; a finding without a register is proven.
+
+## 12. Story material (the unplaced layer)
+
+The full ladder of a fact's life:
+
+1. **Material** — something the author is considering. Intentions, unplaced
+   scenes, obligations, gaps: "Carlos needs a close childhood friend."
+2. **Proposed** — the author (or an agent) thinks it belongs; pending
+   ratification (§5).
+3. **Canon** — true in the story.
+4. **Manuscript** — the reader has actually encountered it.
+
+Material lives in `material/*.yaml` — beside canon, never in it. An item
+carries `type` (character-need | unplaced-scene | motif-idea | relationship
+| obligation | gap), `status` (`unplaced → placed → absorbed | dropped`),
+its body as vague as honestly known, optional purpose, constraints,
+`related` canon ids, and a likely chapter `window`. The validator checks
+only the linkage (related ids, window chapters, placement); vagueness is
+the point — never invent precision to satisfy a schema.
+
+Rules:
+
+- Material is **never load-bearing**: prose and canon must not depend on a
+  material item. Promotion out of material is an explicit act — mint the
+  proposed canon (or bind the scene), set the item `placed` (with
+  `placed_in`) or `absorbed`, and keep the item as the record of intent.
+- Capturing material must cost nothing: an agent hearing "capture that"
+  files the item without forcing decisions about characters, scenes, or
+  placement. `dropped` beats deletion — intent history is story history.

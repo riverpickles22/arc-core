@@ -50,12 +50,50 @@ export interface ProseDraft {
 
 export interface DocsResponse { articles: DocArticle[] }
 export interface ProseResponse { scenes: ProseScene[] }
-export interface ProseAcceptRequest { message?: string }
-export interface ProseAcceptResponse { hash: string; files: string[] }
+export interface ProseAcceptRequest { message?: string; capture?: boolean }
+export interface ProseAcceptResponse { hash: string; files: string[]; capture?: ChatResponse }
 export interface ProseDiscardRequest { file: string }
 export interface OkResponse { ok: true }
 export interface ApiErrorResponse { error: string }
 export interface HealthResponse { ok: boolean; validator: string }
+
+// ---- story material (/api/material) --------------------------------------
+
+/** The unplaced layer (conventions §12): creative material that has not
+ *  found its place. Never load-bearing; the first rung of the ladder
+ *  material → proposed → canon → manuscript. */
+export interface MaterialItem {
+  id: string
+  type: 'character-need' | 'unplaced-scene' | 'motif-idea' | 'relationship' | 'obligation' | 'gap'
+  status: 'unplaced' | 'placed' | 'absorbed' | 'dropped'
+  body: string
+  purpose?: string
+  constraints?: string[]
+  related?: string[]
+  window?: { from?: string; to?: string }
+  placed_in?: string
+  note?: string
+}
+
+export interface MaterialResponse { items: MaterialItem[] }
+
+// ---- the attention inbox (/api/attention) --------------------------------
+
+import type { Finding } from './canon-graph.ts'
+
+/** Everything currently needing the author's attention, aggregated from
+ *  machinery that already runs: the continuity checks, the proposal queue,
+ *  and payoffs planted but never fired. Registers per conventions §11 —
+ *  everything here is proven; argued findings join when lenses ship. */
+export interface AttentionResponse {
+  errors: number
+  warnings: number
+  proposals: number
+  payoffs: number
+  findings: Finding[]
+  proposedRecords: { id: string; type: string }[]
+  danglingPayoffs: { from: string; to: string }[]
+}
 
 // ---- the chat contract (/api/chat) --------------------------------------
 

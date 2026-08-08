@@ -91,6 +91,19 @@ grep -rn -A3 "## Open questions" docs/entities/
 grep -rln "status: proposed" canon/
 ```
 
+**Anchored references.** The viewer's `⧉ ref` buttons copy references like
+`char.carlos@ch.10-return` or `event.diego-killed@1961` (conventions §7).
+When the user pastes one, resolve the anchor as a moment: a chapter anchor
+means the world as of that chapter's span end, a date anchor means the end
+of that date. The canon-graph CLI does the projection:
+
+```bash
+python3 ../arc-core/tools/export-canon.py . - |
+  node --experimental-strip-types ../arc-core/graph/cli.ts - --at <date-or-chapter-end>
+```
+
+An unanchored reference is timeless — just read the record's file.
+
 ## 6. Validate after any canon change
 
 ```bash
@@ -107,3 +120,14 @@ No sync step needed. `tools/export-canon.py` is what `arc-backend` serves and
 `arc-frontend` renders — if they're running, a YAML edit shows up in the
 viewer once the story reloads. If they're not running, the files themselves
 are the whole story; the viewer is a lens on them, not the other way around.
+
+## 8. Capturing story material
+
+When the user voices an intention that has no place yet — "Carlos needs
+more of a social life before everything falls apart; capture that" — file
+it as **material**, not canon (conventions §12): `material/<slug>.yaml`
+with `id: mat.<slug>`, a type, `status: unplaced`, the body as vague as
+they said it, and whatever purpose/constraints/related/window they
+actually implied. Do not invent placement or characters. Validate after.
+The viewer's Material drawer picks it up; promotion to proposed canon
+comes later, as its own act.

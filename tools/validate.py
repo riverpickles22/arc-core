@@ -274,6 +274,29 @@ def main():
                 if ref and ref not in defined:
                     flag(f, f"scene {sid}: unresolved binding id: {ref}")
 
+    # --- pass 3.75: story material (conventions §12) — the unplaced layer.
+    # Only the linkage is validated: related ids and window/placement must
+    # resolve. Everything else stays as vague as the author left it.
+    material_dir = story_dir / "material"
+    if material_dir.is_dir():
+        for f in sorted(material_dir.glob("*.yaml")):
+            item = load_yaml(f) or {}
+            if use_schema and "material" in schemas:
+                validator = jsonschema.Draft202012Validator(schemas["material"], registry=registry)
+                for err in validator.iter_errors(item):
+                    flag(f, f"material: {'/'.join(str(p) for p in err.path)}: {err.message[:200]}")
+            for ref in item.get("related") or []:
+                if ref not in defined:
+                    flag(f, f"material {item.get('id')}: unresolved related id: {ref}")
+            win = item.get("window") or {}
+            for edge in ("from", "to"):
+                ch = win.get(edge)
+                if ch and ch not in defined:
+                    flag(f, f"material {item.get('id')}: window.{edge} names unknown chapter: {ch}")
+            placed = item.get("placed_in")
+            if placed and placed not in defined and not placed.startswith("sc."):
+                flag(f, f"material {item.get('id')}: placed_in does not resolve: {placed}")
+
     # --- pass 4: research citations
     src_file = research_dir / "sources.yaml"
     if src_file.exists():

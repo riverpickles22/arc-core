@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "material.schema.json",
+  "title": "Story material",
+  "description": "Creative material that has not yet found its place in the story (conventions §12): intentions, unplaced scenes, obligations, gaps, maybes. The first rung of the ladder — material, proposed, canon, manuscript. Never load-bearing for prose; vagueness is the point.",
+  "type": "object",
+  "properties": {
+    "id": { "type": "string", "pattern": "^mat\\.[a-z0-9-]+$" },
+    "type": { "enum": ["character-need", "unplaced-scene", "motif-idea", "relationship", "obligation", "gap"] },
+    "status": { "enum": ["unplaced", "placed", "absorbed", "dropped"] },
+    "body": { "type": "string", "description": "The material itself, as vague as it honestly is" },
+    "purpose": { "type": "string", "description": "What this would do for the story" },
+    "constraints": { "type": "array", "items": { "type": "string" } },
+    "related": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Canon ids this touches — the only validated linkage"
+    },
+    "window": {
+      "type": "object",
+      "description": "The chapter range where this likely belongs, when known",
+      "properties": { "from": { "type": "string" }, "to": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "placed_in": { "type": "string", "description": "Where it landed, once placed (chapter or scene id)" },
+    "note": { "type": "string" }
+  },
+  "required": ["id", "type", "status", "body"],
+  "additionalProperties": false
+}
