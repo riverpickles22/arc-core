@@ -27,6 +27,7 @@
     "sensory": { "type": "string", "description": "sights/sounds/smells for prose texture" },
     "tags": { "$ref": "common.schema.json#/$defs/tags" },
     "grounding": { "$ref": "common.schema.json#/$defs/grounding" },
+    "provenance": { "$ref": "common.schema.json#/$defs/provenance" },
     "narrative_notes": { "type": "string" },
     "states": {
       "type": "array",

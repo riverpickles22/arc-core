@@ -31,3 +31,6 @@ jobs:
 
       - name: validate the worked example
         run: python3 tools/validate.py examples/example-story
+
+      - name: provenance registers (negative-tested)
+        run: python3 tools/test_provenance.py

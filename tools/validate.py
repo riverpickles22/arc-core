@@ -204,6 +204,14 @@ def main():
     research_topics = {p.stem for p in (research_dir / "topics").glob("*.md")} \
         if (research_dir / "topics").is_dir() else set()
 
+    # Source keys (research/sources.yaml) — consumed here by the provenance
+    # check and again by pass 4's citation check.
+    src_file = research_dir / "sources.yaml"
+    source_keys = set()
+    if src_file.exists():
+        src = load_yaml(src_file) or {}
+        source_keys = {s["key"] for s in src.get("sources", [])}
+
     for f in canon_files:
         data = load_yaml(f)
         if data is None:
@@ -226,6 +234,30 @@ def main():
                 for v in node:
                     check_grounding(v)
         check_grounding(data)
+        # provenance registers (conventions §13): historical needs sources,
+        # inferred needs confidence, and every source key must resolve —
+        # a cited history that cites nothing is the trust hole this closes.
+        def check_provenance(node):
+            if isinstance(node, dict):
+                p = node.get("provenance")
+                if isinstance(p, dict):
+                    rid = node.get("id", "?")
+                    reg = p.get("register")
+                    if reg == "historical" and not p.get("sources"):
+                        flag(f, f"{rid}: historical provenance requires sources")
+                    if reg == "inferred" and not p.get("confidence"):
+                        flag(f, f"{rid}: inferred provenance requires confidence")
+                    for k in p.get("sources") or []:
+                        if not src_file.exists():
+                            flag(f, f"{rid}: provenance cites {k} but research/sources.yaml does not exist")
+                        elif k not in source_keys:
+                            flag(f, f"{rid}: provenance source not in sources.yaml: {k}")
+                for v in node.values():
+                    check_provenance(v)
+            elif isinstance(node, list):
+                for v in node:
+                    check_provenance(v)
+        check_provenance(data)
 
     # --- pass 3: docs — wikilinks + frontmatter binding + coverage
     articles = {}
@@ -298,13 +330,10 @@ def main():
                 flag(f, f"material {item.get('id')}: placed_in does not resolve: {placed}")
 
     # --- pass 4: research citations
-    src_file = research_dir / "sources.yaml"
     if src_file.exists():
-        src = load_yaml(src_file) or {}
-        keys = {s["key"] for s in src.get("sources", [])}
         for f in sorted((research_dir / "topics").glob("*.md")):
             for m in CITE_RE.finditer(f.read_text()):
-                if m.group(1) not in keys:
+                if m.group(1) not in source_keys:
                     flag(f, f"citation key not in sources.yaml: [@{m.group(1)}]")
 
     # --- report

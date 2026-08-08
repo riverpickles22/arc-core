@@ -30,7 +30,8 @@
     "narrative_notes": { "type": "string" },
     "on_page": { "type": "boolean", "description": "whether this event is dramatized in prose (vs backdrop/off-page)" },
     "tags": { "$ref": "common.schema.json#/$defs/tags" },
-    "grounding": { "$ref": "common.schema.json#/$defs/grounding" }
+    "grounding": { "$ref": "common.schema.json#/$defs/grounding" },
+    "provenance": { "$ref": "common.schema.json#/$defs/provenance" }
   },
   "required": ["id", "type", "scope", "status", "title", "when", "summary"],
   "additionalProperties": false

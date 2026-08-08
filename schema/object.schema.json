@@ -14,6 +14,7 @@
     "destroyed": { "$ref": "common.schema.json#/$defs/timerefOrDate" },
     "tags": { "$ref": "common.schema.json#/$defs/tags" },
     "grounding": { "$ref": "common.schema.json#/$defs/grounding" },
+    "provenance": { "$ref": "common.schema.json#/$defs/provenance" },
     "narrative_notes": { "type": "string" },
     "states": {
       "description": "Custody/location over time via location + controlled_by",

@@ -242,3 +242,34 @@ Rules:
 - Capturing material must cost nothing: an agent hearing "capture that"
   files the item without forcing decisions about characters, scenes, or
   placement. `dropped` beats deletion — intent history is story history.
+
+## 13. Provenance registers (what kind of fact is this?)
+
+A story set against real history holds three different kinds of fact, and
+a record can now say which it is — the `provenance` block, valid on any
+entity or event:
+
+```yaml
+provenance:
+  register: historical        # fictional | historical | inferred
+  sources: [akc-havanese]     # keys into research/sources.yaml
+  confidence: high            # required when register: inferred
+  note: dates per the AKC breed history
+```
+
+- **fictional** — an in-story fact. The default reading when the block is
+  absent; tag it explicitly only when the distinction is worth stating
+  (e.g. a fictional café on a real street).
+- **historical** — real history the story leans on. **Requires at least
+  one source**, and every key must resolve in `research/sources.yaml` —
+  the validator enforces both. A cited history that cites nothing is a
+  trust hole, not a style choice.
+- **inferred** — an authorial inference from history (plausible, not
+  attested). **Requires `confidence`** (high | medium | low); sources
+  optional but welcome.
+
+This is the consequence-register discipline (§11) applied to facts:
+`grounding` says which research *topics* inform a record; `provenance`
+says what the record *is* and cites the specific sources. Surfaces that
+render facts (profiles, the wiki) show the register so the author always
+knows whether they are reading their invention or the world's record.

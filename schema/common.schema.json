@@ -78,6 +78,22 @@
       "type": "array",
       "items": { "type": "string", "pattern": "^[a-z0-9-]+$" }
     },
+    "provenance": {
+      "description": "What kind of fact this record is (conventions §13): fictional (in-story fact — the default reading when absent), historical (real history — requires sources), inferred (authorial inference from history — requires confidence). Source keys resolve to research/sources.yaml.",
+      "type": "object",
+      "properties": {
+        "register": { "enum": ["fictional", "historical", "inferred"] },
+        "sources": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[a-z0-9-]+$" },
+          "minItems": 1
+        },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "note": { "type": "string" }
+      },
+      "required": ["register"],
+      "additionalProperties": false
+    },
     "tags": {
       "type": "array",
       "items": { "type": "string" }
