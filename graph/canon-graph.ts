@@ -11,6 +11,10 @@
 // No dependencies, no build step: plain erasable TypeScript, runnable with
 // `node --experimental-strip-types` and importable by Vite/tsx consumers.
 
+// ---- the HTTP API wire format (types only; see api-types.ts) ------------
+
+export type * from './api-types.ts'
+
 // ---- minimal structural types (consumers keep their richer ones) --------
 
 export type DateLike = string | { date?: string; era?: string; note?: string; approximate?: boolean }
