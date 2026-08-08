@@ -1,0 +1,43 @@
+{
+  "story": { "title": "Impact fixture" },
+  "timeline": { "eras": [{ "id": "era.now", "span": { "start": "1950", "end": "1960" } }] },
+  "entities": {
+    "char.a": {
+      "id": "char.a", "type": "character", "name": "A", "status": "canon", "summary": "",
+      "states": [
+        { "at": { "era": "era.now", "date": "1951" }, "caused_by": ["event.one"], "location": "place.p", "possessions": ["obj.o"], "relationships": [{ "toward": "char.b", "stance": "wary" }] }
+      ]
+    },
+    "char.b": { "id": "char.b", "type": "character", "name": "B", "status": "canon", "summary": "" },
+    "char.clean": { "id": "char.clean", "type": "character", "name": "Clean", "status": "canon", "summary": "" },
+    "place.p": { "id": "place.p", "type": "place", "name": "P", "status": "canon", "summary": "" },
+    "place.sub": { "id": "place.sub", "type": "place", "name": "Sub", "status": "canon", "summary": "", "part_of": "place.p" },
+    "obj.o": {
+      "id": "obj.o", "type": "object", "name": "O", "status": "canon", "summary": "",
+      "states": [{ "at": { "era": "era.now", "date": "1952" }, "controlled_by": "char.a" }]
+    }
+  },
+  "events": {
+    "event.one": {
+      "id": "event.one", "scope": "story", "status": "canon", "title": "One",
+      "when": { "era": "era.now", "date": "1951" }, "where": "place.p",
+      "participants": [{ "entity": "char.a", "role": "subject" }],
+      "leads_to": ["event.two"], "summary": ""
+    },
+    "event.two": {
+      "id": "event.two", "scope": "story", "status": "canon", "title": "Two",
+      "when": { "era": "era.now", "date": "1953" },
+      "causes": ["event.one"], "leads_to": ["event.three"], "summary": ""
+    },
+    "event.three": {
+      "id": "event.three", "scope": "story", "status": "canon", "title": "Three",
+      "when": { "era": "era.now", "date": "1955" }, "on_page": true, "summary": ""
+    }
+  },
+  "relationships": [
+    { "id": "rel.ab", "kind": "ally", "status": "canon", "from": "char.a", "to": "char.b", "directed": false, "summary": "" }
+  ],
+  "chapters": [
+    { "id": "ch.one", "type": "chapter", "order": 1, "title": "One", "status": "canon", "span": { "start": "1951", "end": "1953" }, "pov": "char.a", "events": ["event.one"], "locations": ["place.p"], "summary": "" }
+  ]
+}

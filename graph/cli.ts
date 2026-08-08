@@ -56,6 +56,24 @@ if (args.includes('--orphans')) {
     (o.danglingLeadsTo.map(d => `${d.from} → ${d.to}`).join(', ') || 'none'))
 }
 
+const iid = flag('--impact')
+if (iid) {
+  const r = g.impacts(iid)
+  console.log(`\nimpacts(${iid}) — the deterministic blast radius:`)
+  console.log('  [proven]')
+  console.log(`    events:        ${r.events.map(e => `${e.id} (${e.via})`).join(', ') || 'none'}`)
+  console.log(`    states:        ${r.states.map(s => `${s.entity} @ ${s.at} (${s.via})`).join(', ') || 'none'}`)
+  console.log(`    relationships: ${r.relationships.join(', ') || 'none'}`)
+  console.log(`    chapters:      ${r.chapters.map(c => `${c.id} (${c.via})`).join(', ') || 'none'}`)
+  if (r.parts.length) console.log(`    contains:      ${r.parts.join(', ')}`)
+  console.log(`    downstream:    ${r.downstream.map(d => `${d.id} (depth ${d.depth})`).join(', ') || 'none'}` +
+    (r.downstreamTruncated ? '  — TRUNCATED at the walk cap; the full chain is longer' : ''))
+  console.log('  [asked — surfaced, never answered]')
+  for (const q of r.questions) console.log(`    ${q.question}`)
+  if (!r.questions.length) console.log('    none')
+  console.log('  (scene bindings not loaded here — tools/scenes.py inverts prose; the viewer shows both)')
+}
+
 const dix = args.indexOf('--diff')
 if (dix > -1) {
   const [a, b] = [args[dix + 1], args[dix + 2]]

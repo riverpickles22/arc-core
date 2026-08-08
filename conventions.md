@@ -184,3 +184,26 @@ contract:
 
 `wants` keys are validated against defined ids like every other binding
 reference; the other fields are the author's language, not canon ids.
+
+## 11. The three registers of consequence
+
+Every finding any arc surface shows lives in exactly one register, and no
+surface may blur them:
+
+- **proven** — deterministic facts over the record: the continuity checks,
+  the reports, the impact walk. The only register ever presented as an
+  *error*. Same input, same answer, every run.
+- **argued** — model-read claims about prose or likely narrative impact.
+  Always presented as claims with citations, to review — never verdicts,
+  never with proven's confidence. (No shipped surface carries this register
+  yet; the type exists so those surfaces land into it, not around it.)
+- **asked** — creative questions the dependency structure surfaces ("this
+  payoff is planted by the fact you're changing — does it still stand?").
+  The machine surfaces them because the dependency is visible; it never
+  answers them.
+
+The rule that follows: a report presents the registers labeled, in that
+order — proven, argued, asked. A tool that presents *argued* with
+*proven*'s confidence is overclaiming; a tool that answers *asked* is
+writing the book. The `Register` type lives in `graph/canon-graph.ts`
+beside `Finding`; a finding without a register is proven.

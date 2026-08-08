@@ -88,6 +88,14 @@ export interface ChapterLike {
   span?: SpanLike
 }
 
+/** The three registers of consequence (conventions §11). Every finding any
+ *  surface shows lives in exactly one, never blurred: 'proven' facts are
+ *  deterministic and the only kind ever called an error; 'argued' findings
+ *  are model-read claims with citations, to review, never verdicts; 'asked'
+ *  questions are surfaced because a dependency is visible, and the machine
+ *  never answers them. */
+export type Register = 'proven' | 'argued' | 'asked'
+
 /** A deterministic continuity finding. Severity follows the consequence
  *  taxonomy: 'error' only when the dates are precise enough to prove it;
  *  anything resting on approximate or era-only dates degrades to 'warning'
@@ -95,6 +103,9 @@ export interface ChapterLike {
 export interface Finding {
   check: 'lifespan' | 'causality' | 'custody' | 'co-location' | 'span-sanity' | 'lifecycle'
   severity: 'error' | 'warning'
+  /** Absent means 'proven' — every deterministic check is. The field exists
+   *  so model-read surfaces land into the same shape without a migration. */
+  register?: Register
   about: string[]
   message: string
 }
@@ -201,6 +212,27 @@ export interface ProjectionDiff {
   stateChanged: string[]
   edgesOnlyInA: string[]
   edgesOnlyInB: string[]
+}
+
+/** A prose scene's binding, as consumers hold it (the export carries no
+ *  prose; the viewer and CLIs pass bindings in). */
+export interface SceneBinding { scene: string; facts?: string[]; events?: string[] }
+
+export interface ImpactQuestion { about: string; question: string; register: 'asked' }
+
+/** The deterministic blast radius of one id — registers 'proven' (every
+ *  list but questions) and 'asked' (questions), never blurred. */
+export interface ImpactReport {
+  id: string
+  events: { id: string; via: string }[]
+  states: { entity: string; at: string; via: string }[]
+  relationships: string[]
+  chapters: { id: string; via: string }[]
+  parts: string[]
+  scenes: string[]
+  downstream: { id: string; depth: number }[]
+  downstreamTruncated: boolean
+  questions: ImpactQuestion[]
 }
 
 export class CanonGraph {
@@ -587,6 +619,97 @@ export class CanonGraph {
     const seenMsg = new Set<string>()
     const out = F.filter(f => { const k = f.check + '|' + f.message; if (seenMsg.has(k)) return false; seenMsg.add(k); return true })
     return out.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'error' ? -1 : 1) || a.check.localeCompare(b.check) || a.message.localeCompare(b.message))
+  }
+
+  /** The deterministic blast radius: everything that depends on one id,
+   *  grouped by how it depends — plus, in the 'asked' register, the payoff
+   *  questions the dependency structure surfaces but never answers.
+   *  Registers 'proven' and 'asked' only; the model-read tier is elsewhere. */
+  impacts(id: string, scenes: SceneBinding[] = [], maxDepth = 5, maxNodes = 50): ImpactReport {
+    const ents = this.canon.entities ?? {}
+    const evs = Object.values(this.canon.events ?? {})
+    const label = (at: TimeRef) => at.date ?? at.era
+
+    const events: { id: string; via: string }[] = []
+    for (const e of evs) {
+      if ((e.causes ?? []).includes(id)) events.push({ id: e.id, via: 'caused by it' })
+      if ((e.leads_to ?? []).includes(id)) events.push({ id: e.id, via: 'plants it' })
+      if ((e.participants ?? []).some(p => p.entity === id)) events.push({ id: e.id, via: 'participant' })
+      if ((e.witnesses ?? []).includes(id)) events.push({ id: e.id, via: 'witness' })
+      if (e.where === id) events.push({ id: e.id, via: 'location' })
+    }
+
+    const states: { entity: string; at: string; via: string }[] = []
+    for (const ent of Object.values(ents)) {
+      for (const st of (ent.states ?? []) as AnyState[]) {
+        const cite = (via: string) => states.push({ entity: ent.id, at: label(st.at), via })
+        if (((st.caused_by as string[] | undefined) ?? []).includes(id)) cite('caused_by')
+        if (st.location === id) cite('location')
+        if (((st.possessions as string[] | undefined) ?? []).includes(id)) cite('possession')
+        if (st.controlled_by === id) cite('controlled_by')
+        if (((st.relationships as { toward: string }[] | undefined) ?? []).some(r => r.toward === id)) cite('perception')
+      }
+    }
+
+    const relationships = (this.canon.relationships ?? [])
+      .filter(r => r.from === id || r.to === id).map(r => r.id).sort()
+
+    const chapters: { id: string; via: string }[] = []
+    for (const ch of this.canon.chapters ?? []) {
+      if (ch.pov === id) chapters.push({ id: ch.id, via: 'pov' })
+      if ((ch.events ?? []).includes(id)) chapters.push({ id: ch.id, via: 'covers' })
+      if ((ch.locations ?? []).includes(id)) chapters.push({ id: ch.id, via: 'set in' })
+    }
+
+    const parts = Object.values(ents).filter(e => e.part_of === id).map(e => e.id).sort()
+
+    const sceneIds = scenes
+      .filter(s => (s.facts ?? []).includes(id) || (s.events ?? []).includes(id))
+      .map(s => s.scene).sort()
+
+    // Transitive: forward along causality from the id (if it is an event) or
+    // from the events that directly cite it, depth- and size-capped with the
+    // cap reported — no silent truncation.
+    const isEvent = !!this.canon.events?.[id]
+    const childrenOf = (evId: string): string[] => {
+      const e = this.canon.events[evId]
+      if (!e) return []
+      const kids = [...(e.leads_to ?? [])]
+      for (const other of evs) if ((other.causes ?? []).includes(evId)) kids.push(other.id)
+      return kids
+    }
+    const seeds = isEvent ? [id] : events.map(e => e.id)
+    const seen = new Map<string, number>()
+    let frontier = [...new Set(seeds)]
+    let truncated = false
+    for (let d = 1; d <= maxDepth && frontier.length; d++) {
+      const next: string[] = []
+      for (const cur of frontier) for (const kid of childrenOf(cur)) {
+        if (kid === id || seen.has(kid) || seeds.includes(kid)) continue
+        if (seen.size >= maxNodes) { truncated = true; break }
+        seen.set(kid, d)
+        next.push(kid)
+      }
+      frontier = next
+    }
+    const downstream = [...seen.entries()].map(([eid, depth]) => ({ id: eid, depth }))
+      .sort((a, b) => a.depth - b.depth || a.id.localeCompare(b.id))
+
+    // Register 'asked': the payoff questions the structure surfaces.
+    const questions: ImpactQuestion[] = []
+    const ask = (about: string, question: string) => questions.push({ about, question, register: 'asked' })
+    if (isEvent) {
+      const e = this.canon.events[id]
+      for (const t of e.leads_to ?? []) ask(t, `${id} plants ${t} — does that payoff still stand if this changes?`)
+      for (const p of events.filter(x => x.via === 'plants it')) ask(p.id, `${p.id} plants ${id} — does its setup still make sense if this changes?`)
+    } else {
+      for (const cite of events) {
+        const e = this.canon.events[cite.id]
+        for (const t of e?.leads_to ?? []) ask(t, `${cite.id} (which rests on ${id}) leads to ${t} — does that payoff survive a change here?`)
+      }
+    }
+
+    return { id, events, states, relationships, chapters, parts, scenes: sceneIds, downstream, downstreamTruncated: truncated, questions }
   }
 
   /** Diff two projections at the level of facts: presence, state, and edges. */
