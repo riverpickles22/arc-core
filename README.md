@@ -60,6 +60,18 @@ Both tools take a **path to a story directory**. The story can live anywhere —
 
 The **graph layer** (`graph/`, Node 22+) works on the export JSON — the date-ordering rule lives here once, held to `graph/date-vectors.json` in both languages (`npm test` in `graph/`, `tools/test_date_vectors.py`):
 
+**The testing pattern** (established by the date vectors; new checks follow it):
+one command per repo — `npm test` in `graph/` runs every TS suite, and each
+`tools/test_*.py` runs standalone (both wired into CI). A rule implemented in
+more than one language is specified once in a **shared vector file**
+(`graph/date-vectors.json`) that every implementation runs — sections a
+language can't apply say so in the file (`eras` is TS-only). Behavioral
+checks are verified against **planted-defect fixtures** beside the tests
+(`graph/fixtures/`): every planted violation must be found *and* its clean
+twin must stay quiet, so a check is tested for both sensitivity and silence.
+Validator rules get a **negative test** proving each failure mode fails
+(`tools/test_provenance.py` is the template).
+
 ```sh
 .venv/bin/python tools/export-canon.py ../my-story - |
   node --experimental-strip-types graph/briefing.ts -            # reports + the six continuity checks (--strict for pre-commit)

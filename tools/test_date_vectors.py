@@ -34,9 +34,17 @@ def main():
         if not ka < kb:
             failures += 1
             print(f"FAIL ordering: {p['a']} = {ka} not < {p['before']} = {kb}", file=sys.stderr)
+    for p in SPEC["equalities"]["pairs"]:
+        ka = key(p["a"]["date"], p["a"]["end"])
+        kb = key(p["equals"]["date"], p["equals"]["end"])
+        if not tuple(ka) == tuple(kb):
+            failures += 1
+            print(f"FAIL equality: {p['a']} = {ka} != {p['equals']} = {kb}", file=sys.stderr)
+    # SPEC["eras"] is TS-only: era resolution lives in the graph layer.
     if failures:
         sys.exit(f"date vectors: {failures} failure(s)")
-    print(f"date vectors: {len(SPEC['vectors'])} vectors + {len(SPEC['orderings']['pairs'])} orderings OK (Python date_key)")
+    print(f"date vectors: {len(SPEC['vectors'])} vectors + {len(SPEC['orderings']['pairs'])} orderings"
+          f" + {len(SPEC['equalities']['pairs'])} equalities OK (Python date_key)")
 
 
 if __name__ == "__main__":

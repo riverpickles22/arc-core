@@ -1,7 +1,8 @@
-// Holds dk() to the shared date-ordering vectors. Run: npm test (in graph/),
-// which is `node --experimental-strip-types test-vectors.ts`.
+// Holds dk() to the shared date-ordering vectors — plus the TS-only era
+// sections (eraSpanKeys/timeRefKey; validate.py has no era resolution).
+// Run: npm test (in graph/), which is `node --experimental-strip-types test-vectors.ts`.
 import { readFileSync } from 'node:fs'
-import { dk } from './canon-graph.ts'
+import { dk, eraSpanKeys, timeRefKey, type EraLike, type TimeRef } from './canon-graph.ts'
 
 interface Vector { date: string; end: boolean; y: number; m: number; d: number }
 interface Ref { date: string; end: boolean }
@@ -26,8 +27,38 @@ for (const p of spec.orderings.pairs as { a: Ref; before: Ref }[]) {
   }
 }
 
+for (const p of spec.equalities.pairs as { a: Ref; equals: Ref }[]) {
+  const ka = dk(p.a.date, p.a.end)
+  const kb = dk(p.equals.date, p.equals.end)
+  if (ka !== kb) {
+    failures++
+    console.error(`FAIL equality: dk(${p.a.date},${p.a.end})=${ka} !== dk(${p.equals.date},${p.equals.end})=${kb}`)
+  }
+}
+
+// era boundaries and open-ended spans (TS-only sections)
+const eras = spec.eras.fixture as EraLike[]
+for (const s of spec.eras.spans as { era: string; start: number; end: number }[]) {
+  const era = eras.find(e => e.id === s.era)!
+  const [start, end] = eraSpanKeys(era)
+  if (start !== s.start || end !== s.end) {
+    failures++
+    console.error(`FAIL eraSpanKeys(${s.era}) = [${start}, ${end}], want [${s.start}, ${s.end}]`)
+  }
+}
+for (const t of spec.eras.timerefs as { at: TimeRef; key: number }[]) {
+  const got = timeRefKey(t.at, eras)
+  if (got !== t.key) {
+    failures++
+    console.error(`FAIL timeRefKey(${JSON.stringify(t.at)}) = ${got}, want ${t.key}`)
+  }
+}
+
 if (failures) {
   console.error(`date vectors: ${failures} failure(s)`)
   process.exit(1)
 }
-console.log(`date vectors: ${spec.vectors.length} vectors + ${spec.orderings.pairs.length} orderings OK (TS dk)`)
+console.log(
+  `date vectors: ${spec.vectors.length} vectors + ${spec.orderings.pairs.length} orderings + ` +
+  `${spec.equalities.pairs.length} equalities + ${spec.eras.spans.length + spec.eras.timerefs.length} era cases OK (TS)`,
+)
