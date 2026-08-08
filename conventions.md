@@ -157,3 +157,30 @@ Rules:
   later — the scene remains the binding unit; nothing here would migrate.
 - On conflict, canon wins over prose (§1). A scene whose frontmatter is
   honest makes that conflict findable.
+
+**The scene contract (optional).** Beyond what a scene rests on, the
+frontmatter may state what the scene is *for* — the contract it must
+satisfy, not an outline of what happens. Every field is optional: the
+contract is clarity, never homework. Review passes evaluate prose against
+the scene's stated purpose instead of offering generic advice; the reader
+fields feed the reader model later.
+
+```yaml
+contract:
+  purpose: >                    # what changes because this scene exists
+    Introduce the hollow tree without explaining its symbolism.
+  reader_before: Knows nothing about the tree.
+  reader_after: >               # what the reader must know/suspect/feel after
+    Senses that something foreign is slowly consuming something native.
+  wants:                        # keyed by char id — keys must resolve
+    char.carlos: His father's approval.
+  must_establish:               # free text, checkable by a review pass
+    - The seed arrives accidentally.
+  must_withhold:
+    - The settler's identity.
+  motifs: [the hollowing, foreign intrusion]
+  constraints: Omniscient, at the speed of vegetation. Cuba, 1903.
+```
+
+`wants` keys are validated against defined ids like every other binding
+reference; the other fields are the author's language, not canon ids.

@@ -12,7 +12,27 @@
     "events": { "type": "array", "items": { "type": "string", "pattern": "^event\\.[a-z0-9.-]+$" } },
     "facts": { "type": "array", "items": { "type": "string", "pattern": "^(char|place|faction|obj|rel)\\.[a-z0-9.-]+$" } },
     "span": { "type": "object" },
-    "note": { "type": "string" }
+    "note": { "type": "string" },
+    "contract": {
+      "type": "object",
+      "description": "The scene's stated intent — what it must accomplish, not what happens (conventions.md §10). Every field optional: the contract is clarity, never homework.",
+      "properties": {
+        "purpose": { "type": "string", "description": "What changes because this scene exists" },
+        "reader_before": { "type": "string", "description": "What the reader knows or feels going in" },
+        "reader_after": { "type": "string", "description": "What the reader must know, suspect, or feel afterward" },
+        "wants": {
+          "type": "object",
+          "description": "What each present character wants in this scene, keyed by char id",
+          "propertyNames": { "pattern": "^char\\.[a-z0-9.-]+$" },
+          "additionalProperties": { "type": "string" }
+        },
+        "must_establish": { "type": "array", "items": { "type": "string" } },
+        "must_withhold": { "type": "array", "items": { "type": "string" } },
+        "motifs": { "type": "array", "items": { "type": "string" } },
+        "constraints": { "type": "string", "description": "POV, historical, or stylistic constraints the prose must respect" }
+      },
+      "additionalProperties": false
+    }
   },
   "required": ["scene", "chapter", "status"],
   "additionalProperties": false

@@ -267,8 +267,10 @@ def main():
             if sid in scene_ids:
                 flag(f, f"duplicate scene id {sid}")
             scene_ids.add(sid)
+            contract_wants = (meta.get("contract") or {}).get("wants") or {}
             for ref in [meta.get("chapter"), meta.get("pov"),
-                        *(meta.get("events") or []), *(meta.get("facts") or [])]:
+                        *(meta.get("events") or []), *(meta.get("facts") or []),
+                        *contract_wants.keys()]:
                 if ref and ref not in defined:
                     flag(f, f"scene {sid}: unresolved binding id: {ref}")
 
