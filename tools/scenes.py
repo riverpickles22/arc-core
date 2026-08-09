@@ -29,7 +29,8 @@ def scenes_of(story_dir):
         if "scene" not in meta:
             continue
         refs = [meta.get("chapter"), meta.get("pov"),
-                *(meta.get("events") or []), *(meta.get("facts") or [])]
+                *(meta.get("events") or []), *(meta.get("facts") or []),
+                *((meta.get("contract") or {}).get("satisfies") or [])]
         out.append({"scene": meta["scene"], "file": f.relative_to(story_dir),
                     "status": meta.get("status", "proposed"),
                     "refs": [r for r in refs if r]})

@@ -35,5 +35,32 @@ const counts = g.appearanceCounts()
 expect(counts[0]?.id === 'char.ghost' && counts[0].events === 0 && counts[0].chapters === 0,
   'appearance counts: char.ghost quietest with 0/0')
 
+// Obligations — the mirror of the payoff report, running the other way.
+// Material and bindings are arguments, not canon: material lives beside
+// canon, never in it (conventions §12).
+const MATERIAL = [
+  { id: 'mat.unowned', type: 'obligation', status: 'unplaced', body: 'Nothing claims this.' },
+  { id: 'mat.intended', type: 'obligation', status: 'unplaced', body: 'Claimed by an undrafted scene.', satisfied_by: ['sc.never-1'] },
+  { id: 'mat.late', type: 'obligation', status: 'unplaced', body: 'Met, but after its window closed.', window: { to: 'ch.one' } },
+  { id: 'mat.met', type: 'obligation', status: 'unplaced', body: 'Discharged on the page.' },
+  { id: 'mat.dropped', type: 'obligation', status: 'dropped', body: 'Abandoned deliberately.' },
+  { id: 'mat.notanobligation', type: 'gap', status: 'unplaced', body: 'A gap, not an obligation.' },
+]
+const BINDINGS = [
+  { scene: 'sc.one-1', chapter: 'ch.one', satisfies: ['mat.met'] },
+  { scene: 'sc.two-1', chapter: 'ch.two', satisfies: ['mat.late'] },
+]
+const obl = g.obligations(MATERIAL, BINDINGS)
+expect(obl.unowned.some(o => o.id === 'mat.unowned'), 'obligation unowned: nothing satisfies mat.unowned')
+expect(obl.unwritten.some(o => o.id === 'mat.intended'), 'obligation unwritten: mat.intended is claimed only by an undrafted scene')
+expect(obl.overdue.some(o => o.id === 'mat.late'), 'obligation overdue: mat.late lands after its window closes')
+expect(!obl.unowned.some(o => o.id === 'mat.met') && !obl.unwritten.some(o => o.id === 'mat.met'),
+  'mat.met is discharged on the page — must NOT be flagged')
+expect(!JSON.stringify(obl).includes('mat.dropped'), 'a dropped obligation must NOT be flagged')
+expect(!JSON.stringify(obl).includes('mat.notanobligation'), 'a gap is not an obligation — must NOT be flagged')
+expect(obl.questions.every(q => q.register === 'asked'),
+  'obligation questions carry the asked register — only a reader can say whether prose discharges intent')
+expect(obl.questions.some(q => q.about === 'mat.met'), 'the scene claiming mat.met raises a question, not a verdict')
+
 if (failures) { console.error(`report fixture: ${failures} failure(s)`); process.exit(1) }
 console.log(`report fixture: all planted defects found, all clean cases quiet`)

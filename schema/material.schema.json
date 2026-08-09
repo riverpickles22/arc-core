@@ -22,6 +22,11 @@
       "properties": { "from": { "type": "string" }, "to": { "type": "string" } },
       "additionalProperties": false
     },
+    "satisfied_by": {
+      "description": "What discharges this requirement (conventions §12): material, scene, or canon ids. Absence is the normal state of an open obligation — the reports read it, not the author.",
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "placed_in": { "type": "string", "description": "Where it landed, once placed (chapter or scene id)" },
     "note": { "type": "string" }
   },

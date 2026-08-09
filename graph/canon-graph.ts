@@ -216,7 +216,51 @@ export interface ProjectionDiff {
 
 /** A prose scene's binding, as consumers hold it (the export carries no
  *  prose; the viewer and CLIs pass bindings in). */
-export interface SceneBinding { scene: string; facts?: string[]; events?: string[] }
+export interface SceneBinding {
+  scene: string; facts?: string[]; events?: string[]
+  /** the chapter the scene belongs to — reading order for obligation windows */
+  chapter?: string
+  /** narrative obligations this scene's contract claims to discharge */
+  satisfies?: string[]
+}
+
+/** A story material item (conventions §12). Material lives beside canon,
+ *  never in it, so it is passed into the graph rather than loaded from the
+ *  export — the same way scene bindings are. */
+export interface MaterialLike {
+  id: string
+  type?: string
+  status?: string
+  body?: string
+  satisfied_by?: string[]
+  window?: { from?: string; to?: string }
+}
+
+export interface ObligationRow {
+  id: string
+  body: string
+  /** what claims to discharge it — canon, material, or scene ids */
+  satisfiers: string[]
+  window?: { from?: string; to?: string }
+}
+
+/** What the book still owes (conventions §12) — the mirror of the unfired
+ *  payoff report. A payoff is bottom-up: planted and never fired. An
+ *  obligation is top-down: decided and never made.
+ *
+ *  Registers are split deliberately (§11): the three classes are 'proven' —
+ *  it is a fact that nothing links here — while whether a scene that claims
+ *  an obligation truly discharges it is 'asked', because only a reader can
+ *  answer that. */
+export interface Obligations {
+  /** nothing anywhere claims to satisfy this */
+  unowned: ObligationRow[]
+  /** claimed, but by material or a scene that isn't written */
+  unwritten: ObligationRow[]
+  /** the book is drafted past the window's close and it is still unmet */
+  overdue: ObligationRow[]
+  questions: ImpactQuestion[]
+}
 
 export interface ImpactQuestion { about: string; question: string; register: 'asked' }
 
@@ -619,6 +663,66 @@ export class CanonGraph {
     const seenMsg = new Set<string>()
     const out = F.filter(f => { const k = f.check + '|' + f.message; if (seenMsg.has(k)) return false; seenMsg.add(k); return true })
     return out.sort((a, b) => (a.severity === b.severity ? 0 : a.severity === 'error' ? -1 : 1) || a.check.localeCompare(b.check) || a.message.localeCompare(b.message))
+  }
+
+  /** What the story still owes. Material and scene bindings are arguments,
+   *  not canon — material lives beside canon, never in it (conventions §12). */
+  obligations(material: MaterialLike[], scenes: SceneBinding[] = []): Obligations {
+    const order = new Map((this.canon.chapters ?? []).map(c => [c.id, c.order ?? 0]))
+    // A scene binding exists only when the prose file does, so "has a binding"
+    // is the obligation analogue of an event's on_page.
+    const sceneById = new Map(scenes.map(s => [s.scene, s]))
+    const lastDrafted = scenes.reduce((max, s) => {
+      const o = s.chapter ? order.get(s.chapter) : undefined
+      return o !== undefined && o > max ? o : max
+    }, -1)
+
+    const out: Obligations = { unowned: [], unwritten: [], overdue: [], questions: [] }
+    for (const m of material) {
+      if (m.type !== 'obligation') continue
+      if (m.status === 'absorbed' || m.status === 'dropped') continue
+
+      const claimed = [
+        ...(m.satisfied_by ?? []),
+        ...scenes.filter(s => (s.satisfies ?? []).includes(m.id)).map(s => s.scene),
+      ]
+      const satisfiers = [...new Set(claimed)].sort()
+      const row: ObligationRow = { id: m.id, body: (m.body ?? '').trim(), satisfiers, window: m.window }
+
+      // Only prose discharges an obligation. Canon or material naming it is
+      // an intention — the reader has still met nothing.
+      const onPage = satisfiers.filter(s => sceneById.has(s))
+
+      if (!satisfiers.length) { out.unowned.push(row); continue }
+      if (!onPage.length) { out.unwritten.push(row); continue }
+
+      // Written — but did it land in time, and does it actually discharge?
+      const close = m.window?.to ? order.get(m.window.to) : undefined
+      const earliest = Math.min(...onPage.map(s => {
+        const ch = sceneById.get(s)?.chapter
+        const o = ch ? order.get(ch) : undefined
+        return o ?? Number.POSITIVE_INFINITY
+      }))
+      if (close !== undefined && earliest > close) out.overdue.push(row)
+
+      for (const s of onPage) {
+        out.questions.push({
+          about: m.id,
+          question: `${s} claims to discharge "${row.body.slice(0, 60)}${row.body.length > 60 ? '…' : ''}" — does it, on the page?`,
+          register: 'asked',
+        })
+      }
+    }
+    // An obligation whose window has closed while the book was drafted past it
+    // is overdue even with nothing claiming it.
+    for (const row of out.unowned.concat(out.unwritten)) {
+      const close = row.window?.to ? order.get(row.window.to) : undefined
+      if (close !== undefined && lastDrafted >= close) out.overdue.push(row)
+    }
+    const byId = (a: ObligationRow, b: ObligationRow) => a.id.localeCompare(b.id)
+    out.unowned.sort(byId); out.unwritten.sort(byId); out.overdue.sort(byId)
+    out.questions.sort((a, b) => a.about.localeCompare(b.about) || a.question.localeCompare(b.question))
+    return out
   }
 
   /** A character's world as of T: what they have seen, where they have

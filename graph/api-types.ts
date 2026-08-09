@@ -24,6 +24,8 @@ export interface SceneContract {
   wants?: Record<string, string>
   must_establish?: string[]; must_withhold?: string[]; motifs?: string[]
   constraints?: string
+  /** Narrative obligations this scene discharges (conventions §12). */
+  satisfies?: string[]
 }
 
 export interface ProseScene {
@@ -69,6 +71,17 @@ export interface AnalyzeResponse {
   engine: 'sdk' | 'claude-cli'
   files: string[]
 }
+/** The style contract (/api/style, conventions §10): the author's voice in
+ *  two layers. `proposed` is the queue of machine-proposed rules awaiting
+ *  ratification — always present, empty until the learning pass ships, and
+ *  never binding on drafting. */
+export interface StyleLayerPayload { source: 'author' | 'story'; path: string; body: string }
+export interface StyleResponse {
+  author: StyleLayerPayload | null
+  story: StyleLayerPayload | null
+  proposed: { id: string; rule: string; section: string | null }[]
+}
+
 export interface OkResponse { ok: true }
 export interface ApiErrorResponse { error: string }
 export interface HealthResponse { ok: boolean; validator: string }
@@ -88,6 +101,9 @@ export interface MaterialItem {
   related?: string[]
   window?: { from?: string; to?: string }
   placed_in?: string
+  /** What discharges this requirement — material, scene, or canon ids.
+   *  Absence is the normal state of an open obligation. */
+  satisfied_by?: string[]
   note?: string
 }
 
@@ -106,9 +122,14 @@ export interface AttentionResponse {
   warnings: number
   proposals: number
   payoffs: number
+  /** obligations the story has not met — the mirror of danglingPayoffs */
+  obligations: number
   findings: Finding[]
   proposedRecords: { id: string; type: string }[]
   danglingPayoffs: { from: string; to: string }[]
+  /** what the book still owes (conventions §12); classes are proven, the
+   *  questions that ride with them are asked. */
+  unmetObligations: { id: string; body: string; klass: 'unowned' | 'unwritten' | 'overdue'; satisfiers: string[] }[]
 }
 
 // ---- the chat contract (/api/chat) --------------------------------------

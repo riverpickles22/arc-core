@@ -18,6 +18,11 @@
       "description": "The scene's stated intent — what it must accomplish, not what happens (conventions.md §10). Every field optional: the contract is clarity, never homework.",
       "properties": {
         "purpose": { "type": "string", "description": "What changes because this scene exists" },
+        "satisfies": {
+          "description": "Narrative obligations this scene discharges (conventions §12) — mat.* ids. Invertible like facts/events: the reports answer which prose meets a requirement.",
+          "type": "array",
+          "items": { "type": "string", "pattern": "^mat\\.[a-z0-9-]+$" }
+        },
         "reader_before": { "type": "string", "description": "What the reader knows or feels going in" },
         "reader_after": { "type": "string", "description": "What the reader must know, suspect, or feel afterward" },
         "wants": {

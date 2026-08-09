@@ -279,6 +279,17 @@ def main():
         if eid not in articles:
             flag(docs_of[eid], f"entity {eid} has no docs article")
 
+    # Material ids, collected before the prose pass: a scene's contract may
+    # declare which obligations it discharges, and those are mat.* ids — never
+    # canon ids, so they can't resolve against `defined`.
+    material_dir = story_dir / "material"
+    material_items = {}
+    if material_dir.is_dir():
+        for f in sorted(material_dir.glob("*.yaml")):
+            item = load_yaml(f) or {}
+            if item.get("id"):
+                material_items[item["id"]] = (f, item)
+
     # --- pass 3.5: prose — scene frontmatter binding (conventions §10)
     prose_dir = story_dir / "prose"
     scene_ids = set()
@@ -299,20 +310,22 @@ def main():
             if sid in scene_ids:
                 flag(f, f"duplicate scene id {sid}")
             scene_ids.add(sid)
-            contract_wants = (meta.get("contract") or {}).get("wants") or {}
+            contract = meta.get("contract") or {}
+            contract_wants = contract.get("wants") or {}
             for ref in [meta.get("chapter"), meta.get("pov"),
                         *(meta.get("events") or []), *(meta.get("facts") or []),
                         *contract_wants.keys()]:
                 if ref and ref not in defined:
                     flag(f, f"scene {sid}: unresolved binding id: {ref}")
+            for ref in contract.get("satisfies") or []:
+                if ref not in material_items:
+                    flag(f, f"scene {sid}: satisfies names unknown material: {ref}")
 
     # --- pass 3.75: story material (conventions §12) — the unplaced layer.
     # Only the linkage is validated: related ids and window/placement must
     # resolve. Everything else stays as vague as the author left it.
-    material_dir = story_dir / "material"
-    if material_dir.is_dir():
-        for f in sorted(material_dir.glob("*.yaml")):
-            item = load_yaml(f) or {}
+    if material_items:
+        for f, item in material_items.values():
             if use_schema and "material" in schemas:
                 validator = jsonschema.Draft202012Validator(schemas["material"], registry=registry)
                 for err in validator.iter_errors(item):
@@ -328,6 +341,16 @@ def main():
             placed = item.get("placed_in")
             if placed and placed not in defined and not placed.startswith("sc."):
                 flag(f, f"material {item.get('id')}: placed_in does not resolve: {placed}")
+            # What discharges an obligation may be canon, another material item,
+            # or a scene. A scene id that isn't written yet is the normal state
+            # of an obligation in progress, so it resolves loosely — only an id
+            # of no recognizable shape is an error.
+            for ref in item.get("satisfied_by") or []:
+                if ref in defined or ref in material_items or ref in scene_ids:
+                    continue
+                if ref.startswith("sc."):
+                    continue   # a scene the author intends but hasn't drafted
+                flag(f, f"material {item.get('id')}: satisfied_by does not resolve: {ref}")
 
     # --- pass 4: research citations
     if src_file.exists():
