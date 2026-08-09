@@ -103,10 +103,17 @@ Promotion `proposed → canon` is an explicit authorial act, never a side effect
 
 A story is a self-contained directory — `canon/`, `docs/`, `research/`, `prose/`, and a `CLAUDE.md` describing its agent workflow. It may live anywhere: its own repository, a sibling checkout, or a subdirectory of arc-core (as `examples/example-story` does). Nothing in arc-core is story-specific, and nothing in a story repeats what arc-core defines.
 
+A story also carries its **style contract** — `docs/style.md`, the author's
+voice written down (§10) — started from `templates/style.md`.
+
 A story may also carry its own presentation, which is **not canon** and is not validated:
 
 - `assets/` — files an app draws, such as a basemap coastline.
 - `view.yaml` — how the story is drawn: which basemap to use, and an optional map inset for a dense cluster of places.
+
+A story may also accumulate `.arc/` — machine working state, such as what a
+drafting pass generated before the author edited it. It is gitignored, never
+canon, and nothing but arc reads it; delete it freely.
 
 Both are optional. Apps derive what they can from canon — the map fits itself to the coordinates of `place` entities, and character colours follow `story.protagonists` — so presentation config only records the editorial choices canon cannot imply. These live with the story rather than with the app so that an app serves *any* story, not one of them.
 
@@ -190,6 +197,50 @@ contract:
 
 `wants` keys are validated against defined ids like every other binding
 reference; the other fields are the author's language, not canon ids.
+
+**The style contract.** The scene contract says what *one scene* must
+accomplish. The style contract says how *all sentences* behave — the
+author's voice, written down so it survives a new session, a new
+collaborator, or a machine. It binds prose **form**; canon still wins on
+every question of **fact** (§1).
+
+It lives in two layers, both loaded, the more specific winning:
+
+```
+~/.arc/style.md      the author's own voice — constant across books
+                     (ARC_AUTHOR_STYLE overrides the location)
+docs/style.md        this story's contract — wins on any conflict
+```
+
+An author who writes one book needs only the story layer; the author
+layer exists so that what is constant about a writer does not have to be
+rediscovered with every project. Both are ordinary markdown, versioned
+like anything else, and either may be absent.
+
+A style contract holds four kinds of thing, and its shape is a
+convention, not a schema — nothing validates it:
+
+- **Rules** — checkable statements about form: POV and tense, what the
+  narrator may not do, sensory and rhythm habits, diction boundaries,
+  what is deliberately never named.
+- **Touchstones** — passages quoted from the author's own manuscript that
+  calibrate a rule, each labelled with the quality it demonstrates. A
+  wrong version, annotated with the rules it violates, teaches more than
+  three right ones.
+- **A pre-draft checklist** — the questions any writer, human or machine,
+  answers before showing prose to the author. It is to prose what
+  `validate.py` is to canon: a gate that runs before the work is offered,
+  not a review afterwards.
+- **Open questions** — style decisions not yet made, held honestly rather
+  than resolved by accident.
+
+Rules: every pass that writes or judges prose loads both layers and states
+which one wins. **The contract grows by extraction, never by invention** —
+a rule earns its place because the author's own edits or corrections imply
+it, and a machine may only *propose* one. Proposed rules wait outside the
+contract and bind nothing until the author ratifies them; a machine never
+writes a binding rule, because a voice nobody chose is not a voice.
+New stories start from `templates/style.md` (§9).
 
 ## 11. The three registers of consequence
 

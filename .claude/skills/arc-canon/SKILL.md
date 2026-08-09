@@ -25,6 +25,10 @@ validator. Nothing here needs either app running.
 Same pattern for arc-core: `$ARC_CORE_PATH`, else `<story>/../arc-core`, else
 a sibling/child directory containing `conventions.md` and `schema/`.
 
+The author's own style layer sits outside every story: `$ARC_AUTHOR_STYLE`,
+else `$ARC_HOME/style.md`, else `~/.arc/style.md`. Absent is normal — plenty
+of writers keep only the story's contract.
+
 ## 2. Read conventions.md first — it's binding
 
 Read `<arc-core>/conventions.md` in full before touching any file. It defines
@@ -64,9 +68,11 @@ from one made through the viewer's chat panel:
 3. For each entity in play: its file under `canon/entities/**/` — take the
    latest `states:` snapshot whose `at` ≤ T.
 4. The relevant event file(s) at T, plus their `causes`/`leads_to` neighbors.
-5. `docs/vision.md` (or equivalent) for voice, themes, structural decisions.
-6. `research/topics/*.md` for grounding, where the entity/event cites it.
-7. The story's own `CLAUDE.md`, if present — story-specific state (current
+5. `docs/vision.md` (or equivalent) for themes and structural decisions.
+6. **Before writing or editing any prose: `docs/style.md`, then the author's
+   layer** (§1). This is the voice contract — see §9.
+7. `research/topics/*.md` for grounding, where the entity/event cites it.
+8. The story's own `CLAUDE.md`, if present — story-specific state (current
    milestone, open questions) that doesn't belong in canon or in this skill.
 
 ## 5. Query recipes
@@ -131,3 +137,29 @@ they said it, and whatever purpose/constraints/related/window they
 actually implied. Do not invent placement or characters. Validate after.
 The viewer's Material drawer picks it up; promotion to proposed canon
 comes later, as its own act.
+
+## 9. Writing or editing prose
+
+Canon has `validate.py` as its gate. Prose has the **style contract**
+(conventions §10) — the author's voice, written down. Honor it exactly as
+you honor canon, because a session that drafts in nobody's voice is worse
+than one that drafts nothing.
+
+Before touching anything under `prose/`:
+
+1. Read `<story>/docs/style.md` in full — rules, touchstones, checklist.
+2. Read the author's layer (§1) if it exists.
+3. **The story's contract wins wherever the two disagree.** Both bind prose
+   *form* only; canon still wins on any question of *fact* (conventions §1).
+4. Run the contract's own pre-draft checklist before showing the author
+   prose. That checklist is the gate; running it is not optional.
+
+`docs/style.proposed.md`, if present, is a queue of rules a machine has
+proposed and the author has **not** ratified. It binds nothing. Never draft
+to it, and never quote it as though it were the contract.
+
+**The contract grows by extraction, never by invention.** When the author
+corrects your prose — "stop explaining the metaphor", "that adverb is doing
+the work the verb should" — that correction is evidence about their voice.
+Offer to record it; never write a rule into `style.md` on your own
+initiative. A voice nobody chose is not a voice.
