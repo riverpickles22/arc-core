@@ -60,7 +60,27 @@ Characters and places carry a `states:` list — **time-ordered snapshots**. Sna
 
 - A snapshot may declare `caused_by: [event.*]` — the events that produced it. Causality is traceable, but the snapshot itself is the record.
 - **Objective vs subjective:** objective relationships (kinship, ownership, membership) live in `canon/relationships.yaml`. How a character *perceives* a relationship at a moment in time lives in that character's state snapshot under `relationships:`. The edge "Carlos owns Diego" never changes; Carlos's *feelings* about Diego change per snapshot. This is how arc versions perception.
-- New psychological development ⇒ new snapshot, not an edit to an old one (edit old snapshots only to correct errors).
+- New psychological development ⇒ new snapshot, not an edit to an old one (edit old snapshots only to correct errors). Adding a field a snapshot's own prose already implies (a want living in a stance string, a fear filed as a belief) *completes* the record of that timepoint and is allowed; changing what a snapshot claims is not.
+
+**The state fields**, shared by every entity type (one `$defs.state` — a
+place or an object may carry `psychology` in principle; use judgment):
+`at` (required), `caused_by`, `age`, `location`, `condition`, `psychology`,
+`beliefs`, `wants`, `fears`, `relationships` (perception, above),
+`possessions`, `controlled_by`, `note`.
+
+- `beliefs` — what the entity holds true; `wants` — what it is moving
+  toward; `fears` — what it is moving away from. Structured lists, not
+  prose, so a diff between two moments can say *which* belief was lost and
+  *which* fear replaced it. Wants and fears that live inside `psychology`
+  prose or a relationship stance are invisible to every diff and every
+  drafting context — put them in their fields.
+- Naming collision, deliberate: a **scene contract's** `wants` (§10) is a
+  map keyed by character id — what each character wants *in that scene*. A
+  **state's** `wants` is the character's own list — what they want *in
+  life, at that moment*. Same word, different scope and shape.
+- Knowledge (`knows`) is deliberately **not** a state field yet — it
+  arrives id-typed (`knows: [event.*]`) with the knowledge lint, so that
+  what a character knows stays checkable rather than stringly.
 
 ## 5. Status lifecycle
 

@@ -1,0 +1,6 @@
+.DS_Store
+*.tmp
+
+# arc working state — what a drafting pass generated, before the author
+# edited it. Never the record; safe to delete (conventions §9).
+.arc/

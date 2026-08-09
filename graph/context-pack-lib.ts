@@ -132,9 +132,13 @@ export function buildContextPack(canon: CanonDoc & { generated_from?: string }, 
     const st = charState.get(pov)!
     const bits = ['location', 'condition', 'psychology', 'note'].map(k => st[k] ? `${k}: ${trim(String(st[k]))}` : '').filter(Boolean)
     const beliefs = (st.beliefs as string[] | undefined)?.map(b => trim(b))
+    const wants = (st.wants as string[] | undefined)?.map(w => trim(w))
+    const fears = (st.fears as string[] | undefined)?.map(f => trim(f))
     const percept = (st.relationships as { toward: string; stance: string }[] | undefined)?.map(p => `${p.toward}: ${trim(p.stance)}`)
     item(`\`${pov}\` (${canon.entities[pov]?.name ?? ''}) — ${bits.join(' · ')}`, why(pov))
     if (beliefs?.length) out.push(`  beliefs: ${beliefs.join(' | ')}`)
+    if (wants?.length) out.push(`  wants: ${wants.join(' | ')}`)
+    if (fears?.length) out.push(`  fears: ${fears.join(' | ')}`)
     if (percept?.length) out.push(`  perceives — ${percept.join(' | ')}`)
     if (canon.entities[pov]?.voice) out.push(`  voice: ${trim(canon.entities[pov].voice)}`)
   } else out.push(pov ? `_${pov} has no state at T_` : '_no POV anchor_')
@@ -144,7 +148,14 @@ export function buildContextPack(canon: CanonDoc & { generated_from?: string }, 
     const st = charState.get(c)
     const gone = !extantAt(canon.entities[c], T) ? ' **(not living at T — memory/backstory only)**' : ''
     const desc = st ? ['location', 'condition', 'psychology'].map(k => st[k] ? trim(String(st[k])) : '').filter(Boolean).join(' · ') : trim(canon.entities[c]?.summary)
-    item(`\`${c}\` (${canon.entities[c]?.name ?? ''})${gone} — ${desc}`, why(c))
+    // Wants and fears drive behavior in a scene — the cast gets them too,
+    // compactly, so a drafter never writes a character against their own
+    // current motion.
+    const drives = [
+      ...((st?.wants as string[] | undefined) ?? []).map(w => `wants ${trim(w)}`),
+      ...((st?.fears as string[] | undefined) ?? []).map(f => `fears ${trim(f)}`),
+    ]
+    item(`\`${c}\` (${canon.entities[c]?.name ?? ''})${gone} — ${desc}${drives.length ? ` · ${drives.join(' · ')}` : ''}`, why(c))
   }
   if (chars.size <= (pov ? 1 : 0)) out.push('_none beyond the POV_')
 

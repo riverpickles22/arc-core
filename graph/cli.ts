@@ -5,13 +5,13 @@
 //   node --experimental-strip-types graph/cli.ts export.json --neighbors char.carlos --hops 2 [--kinds participant,at]
 //   node --experimental-strip-types graph/cli.ts export.json --diff 1959 1992
 import { readFileSync } from 'node:fs'
-import { dk, loadGraph, CanonGraph, type CanonDoc } from './canon-graph.ts'
+import { dk, diffCharacter, loadGraph, CanonGraph, type CanonDoc } from './canon-graph.ts'
 
 const args = process.argv.slice(2)
 if (!args.length || args.includes('--help')) {
   console.log(`usage: cli.ts <export.json | -> [--at DATE] [--orphans]
               [--neighbors ID [--hops N] [--kinds a,b]]
-              [--diff DATE_A DATE_B]
+              [--diff DATE_A DATE_B] [--char ID DATE_A DATE_B]
 Reads a canon export (from tools/export-canon.py); "-" reads stdin.`)
   process.exit(args.length ? 0 : 1)
 }
@@ -84,4 +84,27 @@ if (dix > -1) {
   console.log(`  state changed: ${d.stateChanged.join(', ') || 'none'}`)
   console.log(`  edges ended: ${d.edgesOnlyInA.join(', ') || 'none'}`)
   console.log(`  edges begun: ${d.edgesOnlyInB.join(', ') || 'none'}`)
+}
+
+// Who is this character at B that they were not at A — named contents, never
+// counts, with the causes that drove the change.
+const cix = args.indexOf('--char')
+if (cix > -1) {
+  const [id, a, b] = [args[cix + 1], args[cix + 2], args[cix + 3]]
+  const ent = canon.entities[id]
+  if (!ent) { console.error(`no entity ${id}`); process.exit(1) }
+  const d = diffCharacter(ent, dk(a, true), dk(b, true), canon.timeline.eras)
+  console.log(`\ndiffCharacter(${id}, ${a} → ${b}) — ${d.steps} snapshot(s) in the window:`)
+  for (const s of d.scalars) console.log(`  ${s.field}: ${s.before ?? '—'} → ${s.after ?? '—'}`)
+  for (const l of d.lists) {
+    for (const x of l.removed) console.log(`  ${l.field} −: ${x}`)
+    for (const x of l.added) console.log(`  ${l.field} +: ${x}`)
+  }
+  for (const r of d.relationships) {
+    if (r.before === undefined) console.log(`  perceives + ${r.toward}: ${r.after}`)
+    else if (r.after === undefined) console.log(`  perceives − ${r.toward} (was: ${r.before})`)
+    else console.log(`  perceives ~ ${r.toward}: ${r.before} → ${r.after}`)
+  }
+  console.log(`  because of: ${d.causes.join(', ') || '(no caused_by recorded in the window)'}`)
+  if (!d.scalars.length && !d.lists.length && !d.relationships.length) console.log('  no change between these moments')
 }

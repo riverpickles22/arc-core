@@ -160,6 +160,88 @@ export function stateAt<S extends { at: TimeRef }>(
   return states.at(-1)?.s
 }
 
+/** The snapshots strictly after tA and at-or-before tB, in time order —
+ *  the path a character walked between two moments, not just the endpoints. */
+export function statesBetween<S extends { at: TimeRef }>(
+  entity: { states?: S[] },
+  tA: number,
+  tB: number,
+  eras: EraLike[],
+): S[] {
+  return (entity.states ?? [])
+    .map(s => ({ s, k: timeRefKey(s.at, eras) }))
+    .filter(x => x.k > tA && x.k <= tB)
+    .sort((a, b) => a.k - b.k)
+    .map(x => x.s)
+}
+
+export interface StateListDelta { field: 'beliefs' | 'wants' | 'fears' | 'possessions'; added: string[]; removed: string[] }
+export interface StateScalarDelta { field: 'location' | 'condition' | 'psychology' | 'age'; before?: string; after?: string }
+/** absent before = perception gained; absent after = perception dropped */
+export interface RelationshipDelta { toward: string; before?: string; after?: string }
+
+export interface CharacterDiff {
+  /** the compared endpoint snapshots' timerefs; null = no state at that moment */
+  from: TimeRef | null
+  to: TimeRef | null
+  scalars: StateScalarDelta[]
+  lists: StateListDelta[]
+  relationships: RelationshipDelta[]
+  /** caused_by union across every snapshot in (tA, tB] — WHY it changed */
+  causes: string[]
+  /** snapshots inside the window: the path, not just the endpoints */
+  steps: number
+}
+
+/** Who is this character at tB that they were not at tA — named contents,
+ *  never counts. A snapshot that drops one belief and adds another reports
+ *  both; the adjacent-snapshot delta is the degenerate case of this. */
+export function diffCharacter<S extends { at: TimeRef }>(
+  entity: { states?: S[] },
+  tA: number,
+  tB: number,
+  eras: EraLike[],
+): CharacterDiff {
+  const a = stateAt(entity, tA, eras) as AnyState | undefined
+  const b = stateAt(entity, tB, eras) as AnyState | undefined
+  const between = statesBetween(entity, tA, tB, eras) as AnyState[]
+
+  const out: CharacterDiff = {
+    from: a?.at ?? null, to: b?.at ?? null,
+    scalars: [], lists: [], relationships: [],
+    causes: [...new Set(between.flatMap(s => (s.caused_by as string[] | undefined) ?? []))].sort(),
+    steps: between.length,
+  }
+  if (a === b) return out   // same snapshot (or neither exists): no change to report
+
+  const sa = (a ?? {}) as Record<string, unknown>
+  const sb = (b ?? {}) as Record<string, unknown>
+  for (const field of ['location', 'condition', 'psychology', 'age'] as const) {
+    const va = sa[field] === undefined ? undefined : String(sa[field])
+    const vb = sb[field] === undefined ? undefined : String(sb[field])
+    if (va !== vb) out.scalars.push({ field, before: va, after: vb })
+  }
+  for (const field of ['beliefs', 'wants', 'fears', 'possessions'] as const) {
+    const la = (sa[field] as string[] | undefined) ?? []
+    const lb = (sb[field] as string[] | undefined) ?? []
+    const added = lb.filter(x => !la.includes(x))
+    const removed = la.filter(x => !lb.includes(x))
+    if (added.length || removed.length) out.lists.push({ field, added, removed })
+  }
+  const ra = new Map(((sa.relationships as { toward: string; stance: string }[] | undefined) ?? []).map(r => [r.toward, r.stance]))
+  const rb = new Map(((sb.relationships as { toward: string; stance: string }[] | undefined) ?? []).map(r => [r.toward, r.stance]))
+  for (const [toward, stance] of rb) {
+    const prev = ra.get(toward)
+    if (prev === undefined) out.relationships.push({ toward, after: stance })
+    else if (prev !== stance) out.relationships.push({ toward, before: prev, after: stance })
+  }
+  for (const [toward, stance] of ra) {
+    if (!rb.has(toward)) out.relationships.push({ toward, before: stance })
+  }
+  out.relationships.sort((x, y) => x.toward.localeCompare(y.toward))
+  return out
+}
+
 /** Is the entity extant (born/created and not yet dead/ended) at key T? */
 export function extantAt(entity: EntityLike, tEnd: number): boolean {
   const start = dateOf(entity.born) ?? dateOf(entity.created) ?? dateOf(entity.span?.start)

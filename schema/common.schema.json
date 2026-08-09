@@ -119,6 +119,8 @@
         "condition": { "type": "string" },
         "psychology": { "type": "string" },
         "beliefs": { "type": "array", "items": { "type": "string" } },
+        "wants": { "type": "array", "items": { "type": "string" }, "description": "What the entity wants at this moment — its own list, distinct from the scene contract's per-character wants map" },
+        "fears": { "type": "array", "items": { "type": "string" }, "description": "What the entity fears at this moment" },
         "relationships": { "type": "array", "items": { "$ref": "#/$defs/subjectiveRelationship" } },
         "possessions": { "type": "array", "items": { "$ref": "#/$defs/objectId" } },
         "controlled_by": { "$ref": "#/$defs/entityId" },

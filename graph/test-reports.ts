@@ -1,7 +1,7 @@
 // Holds the report queries to a fixture with one known planted defect per
 // class. Run via npm test alongside the date vectors.
 import { readFileSync } from 'node:fs'
-import { loadGraph } from './canon-graph.ts'
+import { diffCharacter, dk, loadGraph } from './canon-graph.ts'
 
 const canon = JSON.parse(readFileSync(new URL('./fixtures/planted-defects.json', import.meta.url), 'utf8'))
 const g = loadGraph(canon)
@@ -61,6 +61,36 @@ expect(!JSON.stringify(obl).includes('mat.notanobligation'), 'a gap is not an ob
 expect(obl.questions.every(q => q.register === 'asked'),
   'obligation questions carry the asked register — only a reader can say whether prose discharges intent')
 expect(obl.questions.some(q => q.about === 'mat.met'), 'the scene claiming mat.met raises a question, not a verdict')
+
+// diffCharacter — named contents, never counts; the why travels with the what.
+const ERAS = [{ id: 'era.x', span: { start: '1950', end: '1999' } }]
+const HERO = { states: [
+  { at: { era: 'era.x', date: '1958' }, location: 'place.cafe', age: 10,
+    beliefs: ['the world is safe', 'dogs are brothers'], wants: ['to inherit the café'],
+    relationships: [{ toward: 'char.friend', stance: 'trusts completely' }] },
+  { at: { era: 'era.x', date: '1975' }, caused_by: ['event.mid'], location: 'place.exile',
+    beliefs: ['the world is safe'], fears: ['wanting anything'] },
+  { at: { era: 'era.x', date: '1992' }, caused_by: ['event.return'], location: 'place.city', age: 44,
+    beliefs: ['dogs are brothers'], wants: ['to go home'],
+    relationships: [{ toward: 'char.friend', stance: 'grieves' }, { toward: 'place.city', stance: 'estranged' }] },
+] }
+const cd = diffCharacter(HERO, dk('1958', true), dk('1992', true), ERAS)
+expect(cd.steps === 2, 'diffCharacter: two snapshots inside the window (the path, not just endpoints)')
+expect(cd.causes.join(',') === 'event.mid,event.return', 'causes union across the window, sorted')
+const beliefs = cd.lists.find(l => l.field === 'beliefs')
+expect(!!beliefs && beliefs.removed.includes('the world is safe') && !beliefs.added.length && !beliefs.removed.includes('dogs are brothers'),
+  'beliefs: names the dropped belief; a belief lost-then-regained mid-window is no endpoint change')
+const wants = cd.lists.find(l => l.field === 'wants')
+expect(!!wants && wants.removed.includes('to inherit the café') && wants.added.includes('to go home'),
+  'wants: a swap reports both sides, never a net-zero count')
+expect(cd.relationships.some(r => r.toward === 'char.friend' && r.before === 'trusts completely' && r.after === 'grieves'),
+  'relationships: stance change carries before and after')
+expect(cd.relationships.some(r => r.toward === 'place.city' && r.before === undefined),
+  'relationships: a gained perception has no before')
+expect(cd.scalars.some(s => s.field === 'age' && s.before === '10' && s.after === '44'), 'scalars: age before/after')
+const same = diffCharacter(HERO, dk('1992', true), dk('1993', true), ERAS)
+expect(same.scalars.length + same.lists.length + same.relationships.length === 0 && same.steps === 0,
+  'equal endpoints (same snapshot both sides): no change reported')
 
 if (failures) { console.error(`report fixture: ${failures} failure(s)`); process.exit(1) }
 console.log(`report fixture: all planted defects found, all clean cases quiet`)
