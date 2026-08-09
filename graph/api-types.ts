@@ -58,6 +58,17 @@ export interface ProseDiscardRequest { file: string }
  *  through the existing draft layer; arc never ratifies its own prose. */
 export interface DraftSceneRequest { chapter: string; guidance?: string }
 export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file: string | null }
+
+/** The analysis pass (/api/prose/analyze): the loop's detect step, run
+ *  BEFORE the author accepts. Read-only — it proposes nothing and writes
+ *  nothing. Its briefing is wholly `argued` (conventions §11): claims with
+ *  citations, for a human to judge, never presented as proven. */
+export interface AnalyzeResponse {
+  briefing: string
+  register: Extract<Register, 'argued'>
+  engine: 'sdk' | 'claude-cli'
+  files: string[]
+}
 export interface OkResponse { ok: true }
 export interface ApiErrorResponse { error: string }
 export interface HealthResponse { ok: boolean; validator: string }
@@ -84,7 +95,7 @@ export interface MaterialResponse { items: MaterialItem[] }
 
 // ---- the attention inbox (/api/attention) --------------------------------
 
-import type { Finding } from './canon-graph.ts'
+import type { Finding, Register } from './canon-graph.ts'
 
 /** Everything currently needing the author's attention, aggregated from
  *  machinery that already runs: the continuity checks, the proposal queue,
