@@ -392,3 +392,45 @@ Rules:
   resolves one on the author's behalf, and never edits accepted prose
   because a note asked it to. Revision lands as a draft, through the same
   gate as everything else (§10).
+
+## 15. Themes
+
+What the book is about, given identity so it can be checked:
+`canon/themes.yaml`, a collection like `relationships.yaml` (§8).
+
+```yaml
+themes:
+  - id: theme.the-hollowing
+    type: theme
+    name: The hollowing
+    status: canon
+    summary: >
+      An invasive vine consuming a living tree from within.
+    carriers: [place.hollow-tree, event.seed-comes-ashore, ch.00-prologue]
+    motifs: [the hollowing, foreign intrusion]
+```
+
+A theme is **not an entity**. It participates in no event, stands in no
+place, and holds no state — making it one would put a node in the graph
+with nothing to connect to and a marker on the map with no coordinate.
+It is a collection entry with two kinds of link:
+
+- **`carriers`** — the canon that embodies it: entities, events,
+  relationships, chapters. Validated like any reference. A theme with no
+  carrier is a *wish*, and the reports say so rather than letting it sit
+  in a manifest looking real.
+- **`motifs`** — the words the theme goes by in scene contracts (§10),
+  matched case-insensitively. This is the bridge to the manuscript, and
+  it runs this direction on purpose: the author writes *"the hollowing"*
+  in a contract because that is what they call it, and arc matches the
+  theme to the prose. Nobody types an id into a contract to satisfy a
+  schema.
+
+The two questions this makes answerable, both deterministic: a theme
+**uncarried** (declared, but no canon embodies it) and a theme
+**unwritten** (carried in canon, but no scene on the page carries it yet)
+— the same shape as unfired payoffs (§?) and unmet obligations (§12),
+pointed at what the book is *about* rather than what it does.
+
+A story may keep a themes section in its directional docs; where both
+exist, canon is the record and the doc is the argument.

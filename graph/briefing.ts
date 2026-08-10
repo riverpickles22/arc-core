@@ -5,7 +5,8 @@
 //
 //   python3 tools/export-canon.py <story> - | node --experimental-strip-types graph/briefing.ts -
 //   node --experimental-strip-types graph/briefing.ts export.json
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join as joinPath } from 'node:path'
 import { loadGraph, type CanonDoc } from './canon-graph.ts'
 
 const src = process.argv[2]
@@ -18,6 +19,34 @@ const canon: CanonDoc & { generated_from?: string } =
 const g = loadGraph(canon)
 
 const strict = process.argv.includes('--strict')
+
+// Scene bindings live in prose, not the export. --prose <dir> lets the
+// briefing read the manuscript's contracts so theme appearances can be
+// matched; without it the theme section reports carriers only.
+const proseIx = process.argv.indexOf('--prose')
+const proseDir = proseIx > -1 ? process.argv[proseIx + 1] : undefined
+function bindingsFrom(dir?: string): { scene: string; chapter?: string; motifs?: string[] }[] {
+  if (!dir) return []
+  const out: { scene: string; chapter?: string; motifs?: string[] }[] = []
+  const walk = (d: string): void => {
+    for (const e of readdirSync(d, { withFileTypes: true })) {
+      const p = joinPath(d, e.name)
+      if (e.isDirectory()) { walk(p); continue }
+      if (!e.name.endsWith('.md')) continue
+      const fm = readFileSync(p, 'utf8').match(/^---\n([\s\S]*?)\n---/)
+      if (!fm) continue
+      const scene = fm[1].match(/^scene:\s*(\S+)/m)?.[1]
+      if (!scene) continue
+      const chapter = fm[1].match(/^chapter:\s*(\S+)/m)?.[1]
+      const motifs = fm[1].match(/^\s*motifs:\s*\[(.*?)\]/m)?.[1]
+        ?.split(',').map(s => s.trim()).filter(Boolean)
+      out.push({ scene, chapter, motifs })
+    }
+  }
+  try { walk(dir) } catch { /* no prose is fine */ }
+  return out
+}
+const bindings = bindingsFrom(proseDir)
 const o = g.orphans()
 const pov = g.povMismatches()
 const ended = g.endedEdgesWithoutCause()
@@ -61,6 +90,17 @@ section('Narrators who never saw their own scenes',
 
 lines.push(`\n## Who is going quiet (appearance counts, ascending)\n`)
 counts.forEach(c => lines.push(`- \`${c.id}\` — ${c.chapters} chapter${c.chapters === 1 ? '' : 's'}, ${c.events} event${c.events === 1 ? '' : 's'}`))
+
+const th = g.themes(bindings)
+section('Themes with nothing to carry them',
+  th.uncarried.map(id => `${th.themes.find(t => t.id === id)?.name ?? id} — declared, but no canon embodies it`),
+  'every theme has a carrier')
+section('Themes carried in canon but not yet on the page',
+  th.unwritten.map(id => {
+    const row = th.themes.find(t => t.id === id)!
+    return `${row.name} — carried by ${row.carriers.join(', ')}, dramatised in no scene`
+  }),
+  proseDir ? 'every carried theme appears in the manuscript' : 'not checked — pass --prose <dir> to match scene motifs')
 
 console.log(lines.join('\n'))
 // --strict: pre-commit mode — provable breaks fail the run; warnings never do.

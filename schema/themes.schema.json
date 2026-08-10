@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/themes.schema.json",
+  "title": "arc themes (canon/themes.yaml)",
+  "description": "What the book is about, given identity so it can be checked (conventions \u00a715). A theme is a collection entry rather than an entity: it participates in no event and sits at no place. `carriers` are the canon that embodies it \u2014 vision.md's own rule, that a theme without a carrier is a wish. `motifs` are the words the author already writes in scene contracts, which is how appearances on the page are computed rather than declared.",
+  "type": "object",
+  "properties": {
+    "themes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^theme\\.[a-z0-9-]+$"
+          },
+          "type": {
+            "const": "theme"
+          },
+          "name": {
+            "type": "string"
+          },
+          "status": {
+            "$ref": "common.schema.json#/$defs/status"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "carriers": {
+            "description": "Canon ids that embody this theme \u2014 entities, events, relationships, chapters.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "motifs": {
+            "description": "The words this theme goes by in scene contracts. Matched case-insensitively so the author writes prose, not ids.",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "narrative_notes": {
+            "type": "string"
+          },
+          "tags": {
+            "$ref": "common.schema.json#/$defs/tags"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "name",
+          "status"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "themes"
+  ],
+  "additionalProperties": false
+}

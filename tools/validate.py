@@ -74,7 +74,8 @@ def schema_for(path, story_dir):
     if parts[0] == "events":
         return "event"
     return {"relationships.yaml": "relationship", "timeline.yaml": "timeline",
-            "story.yaml": "story", "chapters.yaml": "chapters"}.get(parts[0])
+            "story.yaml": "story", "chapters.yaml": "chapters",
+            "themes.yaml": "themes"}.get(parts[0])
 
 
 def date_key(d):
@@ -173,6 +174,9 @@ def main():
         elif name == "chapters":
             for c in data.get("chapters", []):
                 defined[c["id"]] = f
+        elif name == "themes":
+            for th in data.get("themes", []):
+                defined[th["id"]] = f
 
     # --- timeline spans for era containment
     timeline = load_yaml(canon_dir / "timeline.yaml") or {}

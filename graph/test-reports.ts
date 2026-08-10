@@ -92,5 +92,33 @@ const same = diffCharacter(HERO, dk('1992', true), dk('1993', true), ERAS)
 expect(same.scalars.length + same.lists.length + same.relationships.length === 0 && same.steps === 0,
   'equal endpoints (same snapshot both sides): no change reported')
 
+// Themes: what the book is about, and whether anything carries it.
+// The motif match runs prose → theme in the author's own words.
+const THEMED = loadGraph({
+  ...canon,
+  themes: [
+    { id: 'theme.carried-and-written', name: 'Carried and written', carriers: ['char.hero'], motifs: ['the deep'] },
+    { id: 'theme.carried-not-written', name: 'Carried but unwritten', carriers: ['char.hero'], motifs: ['the shore'] },
+    { id: 'theme.a-wish', name: 'A wish', carriers: [], motifs: ['nothing'] },
+    { id: 'theme.by-its-own-name', name: 'Found by name', carriers: ['char.hero'] },
+  ],
+} as never)
+const th = THEMED.themes([
+  { scene: 'sc.one-1', chapter: 'ch.one', motifs: ['The Deep'] },          // case-insensitive
+  { scene: 'sc.one-2', chapter: 'ch.one', motifs: ['found by name'] },     // matched on the theme's own name
+])
+const row = (id: string) => th.themes.find(t => t.id === id)!
+expect(row('theme.carried-and-written').scenes.includes('sc.one-1'),
+  'themes: a motif matches case-insensitively — the author writes prose, not ids')
+expect(row('theme.by-its-own-name').scenes.includes('sc.one-2'),
+  'themes: a theme is found by its own name without repeating it as a motif')
+expect(th.uncarried.length === 1 && th.uncarried[0] === 'theme.a-wish',
+  'themes uncarried: declared with nothing embodying it is a wish, and only that one')
+expect(th.unwritten.includes('theme.carried-not-written'),
+  'themes unwritten: carried in canon but no scene has dramatised it')
+expect(!th.unwritten.includes('theme.a-wish'),
+  'a wish is not also reported unwritten — one finding per theme, the more fundamental one')
+expect(!th.unwritten.includes('theme.carried-and-written'), 'a theme on the page is quiet')
+
 if (failures) { console.error(`report fixture: ${failures} failure(s)`); process.exit(1) }
 console.log(`report fixture: all planted defects found, all clean cases quiet`)

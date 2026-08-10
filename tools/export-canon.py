@@ -14,6 +14,7 @@ Output shape (the contract between canon and any app):
   "entities": { id: {...} },    # all characters/places/factions/objects
   "events": { id: {...} },
   "relationships": [ {...} ],   # objective edges
+  "themes":        [ {...} ],   # what the book is about, with carriers
   "generated_from": "<story>/canon"
 }
 """
@@ -34,6 +35,7 @@ def main():
     out_arg = sys.argv[2] if len(sys.argv) > 2 else "-"
 
     chapters_file = canon / "chapters.yaml"
+    themes_file = canon / "themes.yaml"
     doc = {
         "story": yaml.safe_load((canon / "story.yaml").read_text()),
         "timeline": yaml.safe_load((canon / "timeline.yaml").read_text()),
@@ -41,6 +43,7 @@ def main():
         "events": {},
         "relationships": yaml.safe_load((canon / "relationships.yaml").read_text())["relationships"],
         "chapters": yaml.safe_load(chapters_file.read_text())["chapters"] if chapters_file.exists() else [],
+        "themes": yaml.safe_load(themes_file.read_text())["themes"] if themes_file.exists() else [],
         "generated_from": f"{story_dir.name}/canon",
     }
     for f in sorted((canon / "entities").rglob("*.yaml")):
@@ -52,7 +55,8 @@ def main():
 
     payload = json.dumps(doc, ensure_ascii=False, indent=1)
     summary = (f"{len(doc['entities'])} entities, {len(doc['events'])} events, "
-               f"{len(doc['relationships'])} edges")
+               f"{len(doc['relationships'])} edges, "
+               f"{len(doc['themes'])} themes")
     if out_arg == "-":
         sys.stdout.write(payload)
         print(f"exported {story_dir.name} — {summary}", file=sys.stderr)

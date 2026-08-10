@@ -79,6 +79,17 @@ export interface EdgeLike {
   span?: SpanLike
 }
 
+export interface ThemeLike {
+  id: string
+  name?: string
+  status?: string
+  summary?: string
+  /** canon that embodies this theme */
+  carriers?: string[]
+  /** the words it goes by in scene contracts */
+  motifs?: string[]
+}
+
 export interface ChapterLike {
   id: string
   order?: number
@@ -118,6 +129,7 @@ export interface CanonDoc {
   events: Record<string, EventLike>
   relationships: EdgeLike[]
   chapters?: ChapterLike[]
+  themes?: ThemeLike[]
 }
 
 // ---- THE date-ordering rule --------------------------------------------
@@ -305,6 +317,8 @@ export interface SceneBinding {
   chapter?: string
   /** narrative obligations this scene's contract claims to discharge */
   satisfies?: string[]
+  /** the motifs the scene's contract names, in the author's own words */
+  motifs?: string[]
 }
 
 /** A story material item (conventions §12). Material lives beside canon,
@@ -806,6 +820,45 @@ export class CanonGraph {
     out.unowned.sort(byId); out.unwritten.sort(byId); out.overdue.sort(byId)
     out.questions.sort((a, b) => a.about.localeCompare(b.about) || a.question.localeCompare(b.question))
     return out
+  }
+
+  /** Where each theme actually is: what canon carries it, and which scenes
+   *  carry it on the page. Two deterministic classes, the same shape as the
+   *  payoff and obligation reports pointed at what the book is ABOUT —
+   *  UNCARRIED (declared, nothing embodies it: a wish) and UNWRITTEN
+   *  (carried in canon, but no scene has dramatised it yet).
+   *
+   *  Scene contracts name motifs in the author's own words, so matching runs
+   *  prose → theme, case-insensitively. Nobody types an id into a contract. */
+  themes(scenes: SceneBinding[] = []): {
+    themes: { id: string; name: string; carriers: string[]; scenes: string[] }[]
+    uncarried: string[]
+    unwritten: string[]
+  } {
+    const norm = (s: string) => s.trim().toLowerCase()
+    const declared = this.canon.themes ?? []
+    const rows = declared.map(th => {
+      const words = new Set((th.motifs ?? []).map(norm))
+      // a theme's own name is a motif by default — the author should not have
+      // to repeat it to be found
+      if (th.name) words.add(norm(th.name))
+      const hits = scenes
+        .filter(sc => (sc.motifs ?? []).some(m => words.has(norm(m))))
+        .map(sc => sc.scene)
+        .sort()
+      return {
+        id: th.id,
+        name: th.name ?? th.id,
+        carriers: [...(th.carriers ?? [])].sort(),
+        scenes: [...new Set(hits)],
+      }
+    }).sort((a, b) => a.id.localeCompare(b.id))
+
+    return {
+      themes: rows,
+      uncarried: rows.filter(r => !r.carriers.length).map(r => r.id),
+      unwritten: rows.filter(r => r.carriers.length && !r.scenes.length).map(r => r.id),
+    }
   }
 
   /** A character's world as of T: what they have seen, where they have
