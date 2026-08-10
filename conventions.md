@@ -344,3 +344,51 @@ This is the consequence-register discipline (§11) applied to facts:
 says what the record *is* and cites the specific sources. Surfaces that
 render facts (profiles, the wiki) show the register so the author always
 knows whether they are reading their invention or the world's record.
+
+## 14. Annotations (thoughts anchored to the page)
+
+An **annotation** is a thought the author had while reading a specific
+passage: `annotations/*.yaml`, beside canon and material, never in canon.
+
+```yaml
+id: note.001
+anchor:
+  scene: sc.01-1          # permanent (§2) — survives everything
+  paragraph: 4            # 0-based, at the time the note was made
+  quote: >                # the selected text, verbatim
+    Diego had taken up his post in the doorway
+body: >
+  Diego is furniture here. If "inseparable" is meant to be felt, it has to
+  be dramatised, not asserted.
+status: open              # open → working → resolved | dropped
+```
+
+**Annotations are not material** (§12), and the distinction is worth
+holding. Material is an idea that *may* enter the story — it has no place
+yet. An annotation is a reaction to something that is *already on the
+page*. A note may promote into material, an obligation, or proposed canon
+when its scope outgrows the passage; `links` records what it became.
+
+**The anchor is where the thought occurred, not necessarily what it is
+about.** An author may highlight one sentence and write something that
+implicates the whole book. Nothing in the record should assume the note's
+scope from its anchor's size.
+
+Rules:
+
+- The anchor resolves in order of durability — scene, then paragraph index,
+  then the quoted text. A note whose quote has moved is **relocated and said
+  to have drifted**; a note whose quote is gone is **orphaned**, keeps its
+  text, and waits for the author. It is never silently reattached to
+  whatever now occupies its old index: a note in the wrong place is worse
+  than no note, because it costs trust in every other note.
+- Orphaned notes are a **proven** finding (§11) — it is a fact that the
+  passage is gone — and belong wherever findings are surfaced. Where the
+  thought now belongs is the author's to say.
+- Making a note must cost nothing: select, type, done. The author never
+  categorises a note or declares its scope. Anything arc infers about scope
+  is inference, and says so.
+- A machine may read notes, plan against them, and propose — it never
+  resolves one on the author's behalf, and never edits accepted prose
+  because a note asked it to. Revision lands as a draft, through the same
+  gate as everything else (§10).

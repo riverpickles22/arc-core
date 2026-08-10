@@ -14,6 +14,7 @@
 // ---- the HTTP API wire format (types only; see api-types.ts) ------------
 
 export type * from './api-types.ts'
+export type { Anchor, AnchorResolution, AnchorState, AnnotationLike, ResolvedAnnotation } from './annotations.ts'
 
 // ---- minimal structural types (consumers keep their richer ones) --------
 

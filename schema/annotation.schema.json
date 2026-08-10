@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "annotation.schema.json",
+  "title": "Manuscript annotation",
+  "description": "A thought the author had while reading a specific passage (conventions \u00a714). Anchored to prose, not to canon. Distinct from material: material is an idea that may enter the story; an annotation is a reaction to what is already on the page.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^note\\.[a-z0-9-]+$"
+    },
+    "anchor": {
+      "type": "object",
+      "description": "Scene id, paragraph index, and the quoted selection \u2014 resolved in that order of durability.",
+      "properties": {
+        "scene": {
+          "type": "string",
+          "pattern": "^sc\\.[a-z0-9-]+$"
+        },
+        "paragraph": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "quote": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scene",
+        "paragraph",
+        "quote"
+      ],
+      "additionalProperties": false
+    },
+    "body": {
+      "type": "string",
+      "description": "The note itself, in the author's words. Never categorised by them."
+    },
+    "status": {
+      "enum": [
+        "open",
+        "working",
+        "resolved",
+        "dropped"
+      ]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "What this note became when its scope outgrew the passage \u2014 material, obligation, or canon ids."
+    },
+    "note": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "anchor",
+    "body",
+    "status"
+  ],
+  "additionalProperties": false
+}

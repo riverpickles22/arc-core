@@ -82,6 +82,12 @@ export interface StyleResponse {
   proposed: { id: string; rule: string; section: string | null }[]
 }
 
+/** Annotations (conventions §14) with their anchors resolved against the
+ *  prose as it stands — resolved, drifted, or honestly orphaned. */
+export interface AnnotationsResponse { annotations: import('./annotations.ts').ResolvedAnnotation[] }
+export interface CreateAnnotationRequest { scene: string; paragraph: number; quote: string; body: string }
+export interface UpdateAnnotationRequest { id: string; status: 'open' | 'working' | 'resolved' | 'dropped' }
+
 export interface OkResponse { ok: true }
 export interface ApiErrorResponse { error: string }
 export interface HealthResponse { ok: boolean; validator: string }
@@ -130,6 +136,10 @@ export interface AttentionResponse {
   /** what the book still owes (conventions §12); classes are proven, the
    *  questions that ride with them are asked. */
   unmetObligations: { id: string; body: string; klass: 'unowned' | 'unwritten' | 'overdue'; satisfiers: string[] }[]
+  /** notes whose anchor no longer resolves — proven, and the author's to
+   *  re-place; arc never guesses where a thought now belongs (§14). */
+  orphanedNotes: number
+  orphanedAnnotations: { id: string; body: string; scene: string; quote: string; why: string }[]
 }
 
 // ---- the chat contract (/api/chat) --------------------------------------

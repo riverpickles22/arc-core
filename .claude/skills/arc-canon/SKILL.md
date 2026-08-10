@@ -163,3 +163,50 @@ corrects your prose — "stop explaining the metaphor", "that adverb is doing
 the work the verb should" — that correction is evidence about their voice.
 Offer to record it; never write a rule into `style.md` on your own
 initiative. A voice nobody chose is not a voice.
+
+## 10. Working the author's notes
+
+The author reads the manuscript and leaves **annotations** — thoughts
+anchored to the passage that provoked them (conventions §14),
+`annotations/*.yaml`. When they ask you to *work the open notes*, you are
+being handed accumulated intent, not a prompt.
+
+Read every note whose `status` is `open`, with its anchor: the scene, the
+paragraph, and the quoted text. Then, before changing anything:
+
+1. **Group them.** Notes about the same scene, character, or thread are one
+   piece of work, not several. Two notes may also *conflict* — "make Manuel
+   seem more suspicious here" early and "the Manuel reveal feels too
+   obvious" later. Say so and resolve it before implementing both.
+2. **Judge each note's scope, and say what you judged.** The anchor is where
+   the thought occurred, not necessarily what it is about. A note on one
+   sentence may be a line edit, or may implicate the whole book. Scope drives
+   what you must read:
+   - *local* — the scene's own text, its contract, the style contract.
+   - *scene or chapter* — plus the chapter's canon outline, its events,
+     the neighbouring scenes' contracts.
+   - *story-wide* — plus `impacts()` on whatever the note touches, the
+     character's state at that moment, the obligations it bears on, and
+     the payoff chains it would disturb.
+3. **Ask only where it matters.** Do not seek permission for ordinary
+   editorial decisions — that is what the note delegated to you. Ask when an
+   ambiguity would materially change narrative intent, canon, a character's
+   motivation, chronology, or downstream structure.
+
+Then work them as **one coherent revision**, not a series of disconnected
+edits. Rules that do not bend:
+
+- **Never edit accepted prose because a note asked you to.** Revision lands
+  in the working tree as a draft and reaches the author through the same
+  accept gate as everything else (§9, conventions §10).
+- Prose you write obeys the style contract (§9). Facts you would establish
+  become `status: proposed` canon (§3), never silent.
+- **Never resolve a note yourself.** Report what you did against which notes
+  and leave their status to the author — a note is closed by the person who
+  had the thought.
+- A note whose scope outgrew its passage may become material, a narrative
+  obligation, or proposed canon; record what it became in the note's `links`
+  and tell the author.
+
+Report back per note: what you did, what you judged its scope to be, what
+you deliberately did not do, and anything you would have needed to invent.

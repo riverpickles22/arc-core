@@ -352,6 +352,25 @@ def main():
                     continue   # a scene the author intends but hasn't drafted
                 flag(f, f"material {item.get('id')}: satisfied_by does not resolve: {ref}")
 
+    # --- pass 3.9: annotations (conventions §14) — thoughts anchored to prose.
+    # Only the scene reference is validated. An anchor whose QUOTE has moved
+    # or vanished is not a build failure: prose moves, and reporting where a
+    # note now sits is the reports' business, not the validator's.
+    ann_dir = story_dir / "annotations"
+    if ann_dir.is_dir():
+        for f in sorted(ann_dir.glob("*.yaml")):
+            item = load_yaml(f) or {}
+            if use_schema and "annotation" in schemas:
+                validator = jsonschema.Draft202012Validator(schemas["annotation"], registry=registry)
+                for err in validator.iter_errors(item):
+                    flag(f, f"annotation: {'/'.join(str(p) for p in err.path)}: {err.message[:200]}")
+            scene = (item.get("anchor") or {}).get("scene")
+            if scene and scene not in scene_ids:
+                flag(f, f"annotation {item.get('id')}: anchor names unknown scene: {scene}")
+            for ref in item.get("links") or []:
+                if ref not in defined and ref not in material_items and not ref.startswith("sc."):
+                    flag(f, f"annotation {item.get('id')}: link does not resolve: {ref}")
+
     # --- pass 4: research citations
     if src_file.exists():
         for f in sorted((research_dir / "topics").glob("*.md")):
