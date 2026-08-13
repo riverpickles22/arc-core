@@ -71,6 +71,24 @@ export interface AnalyzeResponse {
   engine: 'sdk' | 'claude-cli'
   files: string[]
 }
+/** Selection suggestions (/api/prose/suggest): rephrase against the style
+ *  contract, or synonyms with nuance notes. Read-only — a suggestion is in
+ *  the `argued` register and is never applied by the machine; the author
+ *  clicks one or none. */
+export interface SuggestRequest {
+  kind: 'rephrase' | 'synonyms'
+  selection: string
+  /** The paragraph the selection sits in — the sentence's surroundings. */
+  paragraph?: string
+  /** The scene file, for POV/tense context in the prompt. */
+  file?: string
+}
+export interface SuggestResponse {
+  suggestions: string[]
+  register: Extract<Register, 'argued'>
+  engine: 'sdk' | 'claude-cli'
+}
+
 /** The style contract (/api/style, conventions §10): the author's voice in
  *  two layers. `proposed` is the queue of machine-proposed rules awaiting
  *  ratification — always present, empty until the learning pass ships, and
