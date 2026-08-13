@@ -146,7 +146,14 @@ export interface UpdateAnnotationRequest { id: string; status: 'open' | 'working
 
 export interface OkResponse { ok: true }
 export interface ApiErrorResponse { error: string }
-export interface HealthResponse { ok: boolean; validator: string }
+export interface HealthResponse {
+  ok: boolean
+  validator: string
+  /** Which generation engine is live, or null when none is configured. The
+   *  viewer needs this to explain an unavailable box rather than let the
+   *  author type into a dead one. */
+  engine: 'sdk' | 'claude-cli' | null
+}
 
 // ---- story material (/api/material) --------------------------------------
 
@@ -170,6 +177,38 @@ export interface MaterialItem {
 }
 
 export interface MaterialResponse { items: MaterialItem[] }
+
+/** The brain dump (/api/dump): free text filed into the material layer.
+ *
+ *  The author says whatever is in their head and arc FILES it rather than
+ *  answering it. Read as operation=capture at authority=exploratory, which
+ *  grants material writes and no canon writes at all — material asserts no
+ *  story truth, so capturing it costs nothing (work-graph.md §3). */
+export interface DumpRequest { text: string }
+
+/** One material record the dump produced, read back from the file itself
+ *  rather than from anything the worker said it wrote. */
+export interface FiledItem { path: string; id: string; type: string; status: string; body: string }
+
+export interface DumpResponse {
+  /** The run id — carry it back to decide the dump. */
+  run: string
+  filed: FiledItem[]
+  /** The judge's reading. Wholly `argued` (conventions §11); `asked` holds
+   *  creative questions arc raises and never answers. */
+  verdict: 'accept' | 'revise' | 'reject'
+  argued: { about: string; claim: string; evidence: string }[]
+  asked: { about: string; question: string }[]
+  reply: string
+  /** Where the raw words were written, before any model ran. */
+  saved: string
+}
+
+/** Keep what was filed, or discard it. Discard marks each item `dropped`
+ *  rather than deleting it — intent history is story history (§12) — and
+ *  both answers write a receipt. */
+export interface DumpDecisionRequest { run: string; keep: boolean; note?: string }
+export interface DumpDecisionResponse { ok: true; receipt: string; dropped: string[] }
 
 // ---- the attention inbox (/api/attention) --------------------------------
 
