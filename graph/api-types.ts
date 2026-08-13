@@ -53,7 +53,14 @@ export interface ProseDraft {
 export interface DocsResponse { articles: DocArticle[] }
 export interface ProseResponse { scenes: ProseScene[] }
 export interface ProseAcceptRequest { message?: string; capture?: boolean }
-export interface ProseAcceptResponse { hash: string; files: string[]; capture?: ChatResponse }
+export interface ProseAcceptResponse {
+  hash: string
+  files: string[]
+  capture?: ChatResponse
+  /** How many style rules the learning pass argued for at this accept, when
+   *  it argued for any. The rules themselves live in the queue, not here. */
+  proposed?: number
+}
 export interface ProseDiscardRequest { file: string }
 /** The drafting pass (/api/prose/draft-scene): generation into the working
  *  tree. The result is an ordinary draft — reviewed, accepted, or discarded
@@ -91,13 +98,44 @@ export interface SuggestResponse {
 
 /** The style contract (/api/style, conventions §10): the author's voice in
  *  two layers. `proposed` is the queue of machine-proposed rules awaiting
- *  ratification — always present, empty until the learning pass ships, and
- *  never binding on drafting. */
+ *  ratification — never binding on drafting, and never loaded into any
+ *  prompt that writes prose. */
 export interface StyleLayerPayload { source: 'author' | 'story'; path: string; body: string }
+
+/** What arc drafted against what the author kept, for one paragraph. The
+ *  backend materializes both strings from its own diff table — a proposal
+ *  can never carry a quote the model wrote. */
+export interface RuleEvidence { scene: string; wrote: string; kept: string }
+
+/** A rule arc has ARGUED for (conventions §11) and the author has not
+ *  ratified. Nothing here binds until the author says so. */
+export interface ProposedRule {
+  id: string
+  rule: string
+  section: string | null
+  at: string
+  evidence: RuleEvidence[]
+}
+
 export interface StyleResponse {
   author: StyleLayerPayload | null
   story: StyleLayerPayload | null
-  proposed: { id: string; rule: string; section: string | null }[]
+  proposed: ProposedRule[]
+}
+
+/** Ratify a proposed rule into a layer, or dismiss it. Deterministic on the
+ *  server — no model runs in this path. */
+export interface RatifyRuleRequest { id: string; action: 'ratify' | 'dismiss'; layer?: 'author' | 'story' }
+export interface RatifyRuleResponse {
+  ok: true
+  action: 'ratify' | 'dismiss'
+  /** The layer file the rule was appended to, or null for a dismissal. */
+  path: string | null
+  /** How many proposals are left in the queue. */
+  remaining: number
+  /** Whether the change was also committed. False for a story without git —
+   *  the file change stands either way; only the visible history is lost. */
+  committed: boolean
 }
 
 /** Annotations (conventions §14) with their anchors resolved against the
