@@ -207,6 +207,23 @@ export interface DumpResponse {
 /** Keep what was filed, or discard it. Discard marks each item `dropped`
  *  rather than deleting it — intent history is story history (§12) — and
  *  both answers write a receipt. */
+/** The raw dumps: what the author typed, before any model read it. Transient
+ *  by design — under .arc/, gitignored — so unlike material these may be
+ *  deleted outright once the thought they carried has been filed. */
+export interface RawDump { file: string; at: string; text: string }
+export interface DumpsResponse { dumps: RawDump[] }
+export interface DeleteDumpRequest { file: string }
+
+/** Correct a filed thought, or move it along its lifecycle (conventions §12).
+ *  Only these three fields are writable: type, id and related are structural. */
+export interface UpdateMaterialRequest {
+  id: string
+  body?: string
+  purpose?: string
+  status?: 'unplaced' | 'placed' | 'absorbed' | 'dropped'
+}
+export interface UpdateMaterialResponse { item: MaterialItem }
+
 export interface DumpDecisionRequest { run: string; keep: boolean; note?: string }
 export interface DumpDecisionResponse { ok: true; receipt: string; dropped: string[] }
 
