@@ -178,42 +178,6 @@ export interface MaterialItem {
 
 export interface MaterialResponse { items: MaterialItem[] }
 
-/** The brain dump (/api/dump): free text filed into the material layer.
- *
- *  The author says whatever is in their head and arc FILES it rather than
- *  answering it. Read as operation=capture at authority=exploratory, which
- *  grants material writes and no canon writes at all — material asserts no
- *  story truth, so capturing it costs nothing (work-graph.md §3). */
-export interface DumpRequest { text: string }
-
-/** One material record the dump produced, read back from the file itself
- *  rather than from anything the worker said it wrote. */
-export interface FiledItem { path: string; id: string; type: string; status: string; body: string }
-
-export interface DumpResponse {
-  /** The run id — carry it back to decide the dump. */
-  run: string
-  filed: FiledItem[]
-  /** The judge's reading. Wholly `argued` (conventions §11); `asked` holds
-   *  creative questions arc raises and never answers. */
-  verdict: 'accept' | 'revise' | 'reject'
-  argued: { about: string; claim: string; evidence: string }[]
-  asked: { about: string; question: string }[]
-  reply: string
-  /** Where the raw words were written, before any model ran. */
-  saved: string
-}
-
-/** Keep what was filed, or discard it. Discard marks each item `dropped`
- *  rather than deleting it — intent history is story history (§12) — and
- *  both answers write a receipt. */
-/** The raw dumps: what the author typed, before any model read it. Transient
- *  by design — under .arc/, gitignored — so unlike material these may be
- *  deleted outright once the thought they carried has been filed. */
-export interface RawDump { file: string; at: string; text: string }
-export interface DumpsResponse { dumps: RawDump[] }
-export interface DeleteDumpRequest { file: string }
-
 /** Correct a filed thought, or move it along its lifecycle (conventions §12).
  *  Only these three fields are writable: type, id and related are structural. */
 export interface UpdateMaterialRequest {
@@ -224,8 +188,50 @@ export interface UpdateMaterialRequest {
 }
 export interface UpdateMaterialResponse { item: MaterialItem }
 
-export interface DumpDecisionRequest { run: string; keep: boolean; note?: string }
-export interface DumpDecisionResponse { ok: true; receipt: string; dropped: string[] }
+/** Notes (/api/notes): whatever the author wanted written down.
+ *
+ *  Filing a note is a WRITE, not a pass — no model runs, nothing can fail for
+ *  an interesting reason, and no engine is required. Turning a note into story
+ *  material is a separate act the author asks for (/api/notes/work). */
+export interface Note {
+  /** The note's file name, which is also its handle. */
+  file: string
+  id: string
+  created: string
+  /** Run ids that have worked this note into the story. */
+  worked: string[]
+  text: string
+}
+export interface NotesResponse { notes: Note[] }
+export interface AddNoteRequest { text: string }
+export interface UpdateNoteRequest { file: string; text: string }
+export interface NoteResponse { note: Note }
+export interface DeleteNoteRequest { file: string }
+
+/** One material record a run produced, read back from the file itself rather
+ *  than from anything the worker said it wrote. */
+export interface FiledItem { path: string; id: string; type: string; status: string; body: string }
+
+/** Working a note into the story (/api/notes/work): slice 1's whole path —
+ *  intake, claim, capability-gated worker, judge — run because the author
+ *  asked. The note is never at risk; a failed run leaves it exactly as it was. */
+export interface WorkNoteRequest { file: string }
+export interface WorkResponse {
+  run: string
+  note: string
+  filed: FiledItem[]
+  /** The judge's reading. Wholly `argued` (conventions §11); `asked` holds
+   *  creative questions arc raises and never answers. */
+  verdict: 'accept' | 'revise' | 'reject'
+  argued: { about: string; claim: string; evidence: string }[]
+  asked: { about: string; question: string }[]
+  reply: string
+}
+
+/** Keep what a run filed, or discard it. Discard marks each item `dropped`
+ *  rather than deleting it (§12); both answers write a receipt. */
+export interface WorkDecisionRequest { run: string; keep: boolean; note?: string }
+export interface WorkDecisionResponse { ok: true; receipt: string; dropped: string[] }
 
 // ---- the attention inbox (/api/attention) --------------------------------
 

@@ -131,9 +131,19 @@ A story may also carry its own presentation, which is **not canon** and is not v
 - `assets/` — files an app draws, such as a basemap coastline.
 - `view.yaml` — how the story is drawn: which basemap to use, and an optional map inset for a dense cluster of places.
 
+A story may also carry `notes/` — the author's notebook. Plain markdown with a
+small frontmatter block (`id`, `created`, `worked`), one file per note. These
+are whatever the author wanted written down and have no structure imposed on
+them: writing a note runs no model, asserts nothing, and cannot fail for an
+interesting reason. Nothing reads a note until the author asks arc to work it
+into the story, which produces material (§12) and leaves the note untouched.
+Notes are committed — they are part of the story, not machine scratch.
+
 A story may also accumulate `.arc/` — machine working state, such as what a
 drafting pass generated before the author edited it. It is gitignored, never
-canon, and nothing but arc reads it; delete it freely.
+canon, and nothing but arc reads it; delete it freely. The distinction from
+`notes/` is worth stating: `.arc/` is arc's, and disposable; `notes/` is the
+author's, and kept.
 
 Both are optional. Apps derive what they can from canon — the map fits itself to the coordinates of `place` entities, and character colours follow `story.protagonists` — so presentation config only records the editorial choices canon cannot imply. These live with the story rather than with the app so that an app serves *any* story, not one of them.
 
