@@ -188,6 +188,37 @@ export interface UpdateMaterialRequest {
 }
 export interface UpdateMaterialResponse { item: MaterialItem }
 
+/** Connected agents (/api/agents): who is working on the story.
+ *
+ *  Everything here is OBSERVED. arc holds no plan for a Claude session working
+ *  with its own tools, so `actions` says what has happened and there is
+ *  deliberately no field for what comes next (work-graph.md §10). */
+export interface Agent {
+  session: string
+  cwd: string
+  source: string
+  since: string
+  /** The run this session's current turn is attached to, if any. */
+  run: string | null
+  state: 'idle' | 'working'
+  actions: { at: string; detail: unknown }[]
+}
+export interface AgentsResponse { agents: Agent[] }
+
+/** A hook reporting in. `ignored` means the session is not working on the
+ *  story this backend serves — arc serves one story, and a prompt typed in
+ *  another project is not a fact about this one. */
+export interface HookRequest {
+  event: string
+  session: string
+  cwd: string
+  source?: string
+  prompt?: string
+  detail?: unknown
+  run?: string
+}
+export interface HookResponse { ok: true; ignored?: true; run?: string }
+
 /** Runs (/api/runs): what arc is doing, and why (work-graph.md §5, §9).
  *
  *  A run is created from the author's raw words BEFORE anything reads them —
