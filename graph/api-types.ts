@@ -188,6 +188,45 @@ export interface UpdateMaterialRequest {
 }
 export interface UpdateMaterialResponse { item: MaterialItem }
 
+/** Editorial lenses (/api/prose/lenses): several readings of one scene at
+ *  once, each from its own projection of the graph. Read-only by
+ *  construction — no lens holds write capability — so everything here is
+ *  `argued` (conventions §11) and nothing it says changes the story. */
+export interface LensFinding {
+  lens: 'character' | 'style' | 'historical' | 'continuity'
+  about: string
+  claim: string
+  evidence: string
+  register: 'argued'
+}
+
+export interface LensReport {
+  lens: LensFinding['lens']
+  findings: LensFinding[]
+  /** Per-lens measurements (work-graph.md §12). Reported per lens rather than
+   *  averaged: an under-specified selector and an over-broad one look
+   *  identical in a mean. */
+  context_supplied: number
+  context_used: number
+  /** Null when nothing was supplied — a node handed nothing has no ratio,
+   *  and reporting 1.0 would make an under-specified selector look best. */
+  context_utilization: number | null
+  claim_expansions: number
+  stale: string[]
+  error?: string
+}
+
+export interface LensesResponse {
+  scene: string
+  lenses: LensReport[]
+  findings: LensFinding[]
+  synthesis: string
+  /** Wall-clock of the concurrent fan-out, against the sum of its parts. */
+  wall_ms: number
+  serial_ms: number
+  run: string
+}
+
 /** Connected agents (/api/agents): who is working on the story.
  *
  *  Everything here is OBSERVED. arc holds no plan for a Claude session working
