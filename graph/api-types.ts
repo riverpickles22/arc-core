@@ -188,6 +188,32 @@ export interface UpdateMaterialRequest {
 }
 export interface UpdateMaterialResponse { item: MaterialItem }
 
+/** Runs (/api/runs): what arc is doing, and why (work-graph.md §5, §9).
+ *
+ *  A run is created from the author's raw words BEFORE anything reads them —
+ *  the hook that opens one is synchronous with a 30-second budget while intake
+ *  alone measures ~9s, so the run carries what they said and the structured
+ *  reading fills in later. */
+export interface RunSummary {
+  id: string
+  source: 'ui' | 'claude-code' | 'cli' | 'external'
+  prompt: string
+  started_at: string
+  /** `awaiting` means it is the author's move. */
+  state: 'working' | 'awaiting' | 'closed'
+  events: number
+  decision?: 'accepted' | 'rejected' | 'abandoned'
+}
+export interface RunEventPayload { at: string; event: string; node?: string; detail?: unknown }
+
+export interface RunsResponse { runs: RunSummary[] }
+export interface RunResponse { run: RunSummary }
+export interface RunDetailResponse { run: RunSummary; events: RunEventPayload[] }
+export interface OpenRunRequest { prompt: string; source?: RunSummary['source'] }
+export interface ObserveRunRequest { detail: unknown }
+export interface RunDecisionRequest { decision: 'accepted' | 'rejected' | 'abandoned'; note?: string }
+export interface RunDecisionResponse { ok: true; receipt: string; dropped: string[] }
+
 /** Notes (/api/notes): whatever the author wanted written down.
  *
  *  Filing a note is a WRITE, not a pass — no model runs, nothing can fail for
