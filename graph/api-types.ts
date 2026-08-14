@@ -237,6 +237,17 @@ export interface RunSummary {
 }
 export interface RunEventPayload { at: string; event: string; node?: string; detail?: unknown }
 
+/** What /api/runs/stream emits. One shape for run events and story events
+ *  alike, so the viewer holds a single subscription. `run: null` means nothing
+ *  governed explains it — a file changed outside any run (work-graph.md §10). */
+export interface StreamMessage {
+  run: string | null
+  at: string
+  event: string
+  node?: string
+  detail?: unknown
+}
+
 export interface RunsResponse { runs: RunSummary[] }
 export interface RunResponse { run: RunSummary }
 export interface RunDetailResponse { run: RunSummary; events: RunEventPayload[] }
