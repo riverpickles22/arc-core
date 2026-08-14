@@ -234,6 +234,10 @@ export interface RunSummary {
   state: 'working' | 'awaiting' | 'closed'
   events: number
   decision?: 'accepted' | 'rejected' | 'abandoned'
+  /** Canon ids this run holds WRITE or PROPOSE over — never what it merely
+   *  read. A run that read nine entities to file one item must not light nine
+   *  nodes; presence marks intent to change, not attention. */
+  touching: string[]
 }
 export interface RunEventPayload { at: string; event: string; node?: string; detail?: unknown }
 
