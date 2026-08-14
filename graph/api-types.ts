@@ -188,6 +188,42 @@ export interface UpdateMaterialRequest {
 }
 export interface UpdateMaterialResponse { item: MaterialItem }
 
+/** Revision fan-out (/api/prose/revise): the author's open notes worked into
+ *  the prose. Conflicts are surfaced BEFORE anything is written — a non-empty
+ *  `conflicts` means nothing was revised and the author decides first. */
+export interface NoteConflict { between: string[]; tension: string }
+
+export interface RevisionResult {
+  scene: string
+  file: string
+  /** The notes this revision answers. Provenance, carried to the receipt. */
+  notes: string[]
+  words_before: number
+  words_after: number
+  word_delta: number
+  changed: boolean
+  /** Non-empty when something this node read moved under it. */
+  stale: string[]
+  refused?: string
+  error?: string
+}
+
+export interface ReviseResponse {
+  conflicts: NoteConflict[]
+  clusters: number
+  /** How many rounds the write sets forced. One wave means everything was
+   *  disjoint and ran at once. */
+  waves: number
+  revisions: RevisionResult[]
+  notes_addressed: string[]
+  scenes_changed: string[]
+  word_delta: number
+  stale_nodes: string[]
+  proposed_canon_changes: string[]
+  wall_ms: number
+  run: string
+}
+
 /** Editorial lenses (/api/prose/lenses): several readings of one scene at
  *  once, each from its own projection of the graph. Read-only by
  *  construction — no lens holds write capability — so everything here is
