@@ -109,6 +109,61 @@ export function resolveAnnotations(
       a.id.localeCompare(b.id))
 }
 
+/* ---- locks: the same anchor, carrying a refusal instead of a thought ----
+ *
+ * A lock says "this passage is settled — work around it." It anchors exactly
+ * like a note (scene, paragraph, quote) and resolves by the same rules, so a
+ * lock follows its prose when paragraphs shift and orphans honestly when the
+ * passage is gone. An orphaned lock blocks nothing: enforcing a lock whose
+ * text no longer exists would be locking a guess. */
+export interface LockLike {
+  id: string
+  anchor: Anchor
+  created_at?: string
+}
+
+export interface ResolvedLock extends LockLike {
+  resolution: AnchorResolution
+}
+
+export function resolveLocks(
+  locks: LockLike[],
+  sceneBody: (scene: string) => string | null,
+): ResolvedLock[] {
+  return locks
+    .map(l => ({ ...l, resolution: resolveAnchor(l.anchor, sceneBody(l.anchor.scene)) }))
+    .sort((a, b) =>
+      a.anchor.scene.localeCompare(b.anchor.scene) ||
+      (a.resolution.paragraph ?? Number.MAX_SAFE_INTEGER) - (b.resolution.paragraph ?? Number.MAX_SAFE_INTEGER) ||
+      a.id.localeCompare(b.id))
+}
+
+/** Which locked paragraphs did a rewrite fail to carry verbatim?
+ *
+ *  The question is presence, not position: a locked paragraph may move when
+ *  its neighbours grow or shrink, and that is fine — what it may not do is
+ *  change. Only locks that currently resolve (or drifted somewhere findable)
+ *  are enforced; orphans and missing scenes block nothing, by design.
+ *  Pure, so the write paths that refuse on it can be tested without I/O. */
+export function lockViolations(
+  before: string,
+  after: string,
+  locks: ResolvedLock[],
+): { lock: ResolvedLock; paragraph: number; text: string }[] {
+  const norm = (s: string) => s.replace(/\s+/g, ' ').trim()
+  const beforeParas = paragraphsOf(before).map(norm)
+  const afterParas = new Set(paragraphsOf(after).map(norm))
+  const out: { lock: ResolvedLock; paragraph: number; text: string }[] = []
+  for (const l of locks) {
+    if (l.resolution.state !== 'resolved' && l.resolution.state !== 'drifted') continue
+    const at = l.resolution.paragraph
+    if (at === null || at >= beforeParas.length) continue
+    const text = beforeParas[at]
+    if (!afterParas.has(text)) out.push({ lock: l, paragraph: at, text })
+  }
+  return out
+}
+
 /** Notes whose anchor no longer resolves — a proven finding (conventions
  *  §11): it is a fact that the passage is gone, and only the author can say
  *  where the thought now belongs. */

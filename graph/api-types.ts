@@ -129,6 +129,12 @@ export interface StyleResponse {
   proposed: ProposedRule[]
 }
 
+/** Locks (settled prose): anchored refusals, resolved like annotations.
+ *  The write path enforces them; the wire only reports and edits them. */
+export interface LocksResponse { locks: import('./annotations.ts').ResolvedLock[] }
+export interface CreateLockRequest { scene: string; paragraph: number; quote: string }
+export interface DeleteLockRequest { id: string }
+
 /** Ratify a proposed rule into a layer, or dismiss it. Deterministic on the
  *  server — no model runs in this path. */
 export interface RatifyRuleRequest { id: string; action: 'ratify' | 'dismiss'; layer?: 'author' | 'story' }
