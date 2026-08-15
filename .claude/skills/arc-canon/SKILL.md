@@ -156,7 +156,29 @@ Before touching anything under `prose/`:
 
 `docs/style.proposed.md`, if present, is a queue of rules a machine has
 proposed and the author has **not** ratified. It binds nothing. Never draft
-to it, and never quote it as though it were the contract.
+to it, and never quote it as though it were the contract. It grows from two
+sources at the accept gate: the diff between what arc drafted and what the
+author kept, and the diff between the author's own accepted prose and their
+hand revision of it — the second is the purest voice signal and files with
+`source: revision`. Both wait for the author's ratify click on the Style
+page; your law is unchanged.
+
+**Locked prose (`locks/*.yaml`).** The author can lock a stretch of
+manuscript: a lock anchors like an annotation (scene, paragraph, quote),
+follows its paragraph when prose moves, and is **enforced by the write
+path** — any write that changes a locked paragraph is refused with HTTP 423
+naming the lock, whether it comes from you, the editor, or a revision
+fan-out. When you hit one:
+
+- **Write around it.** Locked prose is settled prose; the author is telling
+  you this passage is done. Revise the neighbours, reproduce the locked
+  paragraph verbatim.
+- **Report the lock** when it constrains what a note or instruction asked
+  of you — "sc.03-2 ¶4 is locked (lock.002), so I worked around it" is the
+  correct answer, not a workaround.
+- **Never remove or edit a lock to get past it.** Unlocking is the author's
+  right-click, nobody else's. An orphaned lock (its passage gone) blocks
+  nothing and needs no action from you.
 
 **The contract grows by extraction, never by invention.** When the author
 corrects your prose — "stop explaining the metaphor", "that adverb is doing
@@ -170,6 +192,13 @@ The author reads the manuscript and leaves **annotations** — thoughts
 anchored to the passage that provoked them (conventions §14),
 `annotations/*.yaml`. When they ask you to *work the open notes*, you are
 being handed accumulated intent, not a prompt.
+
+Annotations now carry a `kind`: absent or `note` is a thought with a
+status lifecycle; `kind: keypoint` is a **margin-timeline marker** — a
+structural statement, not a request for change. **Skip keypoints entirely
+when working notes**: they have no status, they never drive a revision (the
+fan-out excludes them and so must you), and "resolving" one is a category
+error.
 
 Read every note whose `status` is `open`, with its anchor: the scene, the
 paragraph, and the quoted text. Then, before changing anything:
@@ -210,3 +239,29 @@ edits. Rules that do not bend:
 
 Report back per note: what you did, what you judged its scope to be, what
 you deliberately did not do, and anything you would have needed to invent.
+
+## 11. Key points — the structural trail you leave
+
+The manuscript's margin timeline draws a dot wherever a **key point**
+marks what a passage must get across; the author hovers a dot to read it.
+Key points have two authors by design: the human, and you.
+
+**Mint them when you draft or revise a chapter** — one short statement per
+load-bearing passage, anchored to its paragraph. That trail is how a future
+session (and the author, scrolling) reads the chapter's structure without
+re-deriving it. Against a running backend:
+
+    POST /api/annotations
+    { "scene": "sc.03-1", "paragraph": 4, "quote": "<the paragraph's own text>",
+      "body": "what this passage must get across", "kind": "keypoint", "by": "agent" }
+
+or write `annotations/note-NNN.yaml` directly with the same fields —
+`kind: keypoint`, `by: agent`, no `status`. The quote is the durable
+anchor; use the paragraph's actual text so the dot follows the prose when
+it moves.
+
+Discipline: a key point states structure ("the boy burns his boat — no way
+back"), never critique; sparse is correct — a dot on everything marks
+nothing; `by: agent` always, so the author can review your trail as the
+proposal it is; and delete only keypoints (`POST /api/annotations/delete`,
+or remove the file) — the route refuses notes, and so should you.
