@@ -153,7 +153,13 @@ export interface RatifyRuleResponse {
 /** Annotations (conventions §14) with their anchors resolved against the
  *  prose as it stands — resolved, drifted, or honestly orphaned. */
 export interface AnnotationsResponse { annotations: import('./annotations.ts').ResolvedAnnotation[] }
-export interface CreateAnnotationRequest { scene: string; paragraph: number; quote: string; body: string }
+export interface CreateAnnotationRequest {
+  scene: string; paragraph: number; quote: string; body: string
+  kind?: 'note' | 'keypoint'; by?: 'author' | 'agent'
+}
+/** Hard delete — keypoints only. Notes are thoughts, and thoughts are
+ *  resolved or dropped, never erased. */
+export interface DeleteAnnotationRequest { id: string }
 export interface UpdateAnnotationRequest { id: string; status: 'open' | 'working' | 'resolved' | 'dropped' }
 
 export interface OkResponse { ok: true }

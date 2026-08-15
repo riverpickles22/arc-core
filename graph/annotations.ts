@@ -35,6 +35,15 @@ export interface AnnotationLike {
   created_at?: string
   /** ids this note produced when its scope outgrew the passage */
   links?: string[]
+  /** What the record IS. Absent means 'note' — a thought with a status
+   *  lifecycle, rendered in the notes rail, driving revision work. A
+   *  'keypoint' is the margin timeline's dot (A30): a structural statement
+   *  with no lifecycle, never in the notes rail, never driving a revision —
+   *  it marks what a passage must get across, it does not ask for change. */
+  kind?: 'note' | 'keypoint'
+  /** Provenance: who minted it. A keypoint an agent left while working is
+   *  reviewable and deletable like any proposal; absent means the author. */
+  by?: 'author' | 'agent'
 }
 
 export type AnchorState = 'resolved' | 'drifted' | 'orphaned' | 'no-scene'
