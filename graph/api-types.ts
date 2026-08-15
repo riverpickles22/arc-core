@@ -108,13 +108,19 @@ export interface StyleLayerPayload { source: 'author' | 'story'; path: string; b
 export interface RuleEvidence { scene: string; wrote: string; kept: string }
 
 /** A rule arc has ARGUED for (conventions §11) and the author has not
- *  ratified. Nothing here binds until the author says so. */
+ *  ratified. Nothing here binds until the author says so.
+ *
+ *  `source` says what the evidence diffs: 'draft' — arc's draft against what
+ *  the author kept (A7-6); 'revision' — the author's own accepted prose
+ *  against their hand rewrite of it, the purest voice signal there is.
+ *  Absent means draft: queues written before the field existed stay valid. */
 export interface ProposedRule {
   id: string
   rule: string
   section: string | null
   at: string
   evidence: RuleEvidence[]
+  source?: 'draft' | 'revision'
 }
 
 export interface StyleResponse {
