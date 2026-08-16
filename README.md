@@ -106,3 +106,11 @@ Copy the shape of `examples/example-story` — it is deliberately small (three e
 - **arc-frontend** — the living map/graph/timeline viewer.
 
 Both are optional. Canon plus these tools is a complete, useful system on its own.
+
+## License
+
+Licensed under the [Apache License 2.0](LICENSE) — the code, the schemas and
+`conventions.md` are free to use, modify and distribute, with an explicit
+patent grant. The **arc** name is not part of that grant: Apache 2.0 §6
+licenses no trademarks, so the name stays with the author while the work
+it names is open.
