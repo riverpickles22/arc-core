@@ -50,6 +50,17 @@ ID_FIELD_RE = re.compile(
     r"^(char|place|faction|obj|event|era|tp|rel|ch)\.[a-z0-9-]+(\.[a-z0-9-]+)*$"
 )
 
+# The format version this arc-core speaks. A story declares its own in
+# canon/story.yaml as `arc_format:`; see STORY-FORMAT.md. The schemas are
+# additionalProperties: false, so adding a field is a breaking change for
+# every story that lacks it — this integer is the only thing that lets arc
+# tell "written before that field existed" from "wrong".
+#
+# It is a bare integer on purpose. A story either conforms to a format or it
+# does not; minor and patch numbers on a data format invite distinctions
+# nobody enforces.
+ARC_FORMAT = 1
+
 # The canon files a story cannot omit (conventions §9). Everything else under
 # canon/ is optional; these three are read unconditionally by export-canon.py,
 # so a story without them parses fine here and then 500s the viewer.
@@ -60,10 +71,19 @@ REQUIRED_CANON = (
 )
 
 findings = []
+warnings = []
 
 
 def flag(path, msg):
     findings.append(f"{path}: {msg}")
+
+
+def warn(path, msg):
+    """Something the author should know that does not make the story invalid.
+    Warnings are reported and never change the exit code — a check that should
+    block a commit is a finding, and calling it a warning is how a rule quietly
+    stops being one."""
+    warnings.append(f"{path}: {msg}")
 
 
 def load_yaml(path):
@@ -158,6 +178,29 @@ def main():
     for name, why in REQUIRED_CANON:
         if not (canon_dir / name).exists():
             flag(canon_dir / name, f"missing — every story needs canon/{name} ({why})")
+
+    # --- which format does this story expect?
+    #
+    # Asked before anything else is read, because the answer decides whether
+    # the rest of this run means anything. A story from the future is the case
+    # that must not pass quietly: arc would check it against the wrong contract
+    # and report either false findings or false silence, and both are worse
+    # than being told to upgrade.
+    story_file = canon_dir / "story.yaml"
+    if story_file.exists():
+        declared = (load_yaml(story_file) or {}).get("arc_format")
+        if declared is None:
+            warn(story_file,
+                 f"declares no arc_format — read as format {ARC_FORMAT}. Add "
+                 f"`arc_format: {ARC_FORMAT}` so a future arc knows which contract this story expects")
+        elif isinstance(declared, int) and declared > ARC_FORMAT:
+            flag(story_file,
+                 f"declares arc_format {declared}, but this arc-core speaks {ARC_FORMAT} — "
+                 f"it cannot check a story written against a newer contract. Update arc-core")
+        elif isinstance(declared, int) and declared < ARC_FORMAT:
+            warn(story_file,
+                 f"declares arc_format {declared}; this arc-core speaks {ARC_FORMAT}. "
+                 f"Still readable — see STORY-FORMAT.md for what changed")
 
     # --- load schemas
     registry = None
@@ -419,6 +462,8 @@ def main():
     # --- report
     if not use_schema:
         print("⚠ schema pass SKIPPED (--skip-schema) — schema conformance was NOT checked")
+    for x in warnings:
+        print(f"⚠ {x}")
     if findings:
         print(f"FAIL — {len(findings)} finding(s):")
         for x in findings:

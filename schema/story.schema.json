@@ -4,6 +4,11 @@
   "title": "arc story manifest (canon/story.yaml)",
   "type": "object",
   "properties": {
+    "arc_format": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "The arc story format this story is written against. A bare integer: a story either conforms to a format or it does not. Optional so that stories predating it still validate, and warned about rather than rejected — but every story arc creates declares one, and a consumer that meets a higher number than it knows must stop rather than guess. See STORY-FORMAT.md."
+    },
     "slug": { "type": "string", "pattern": "^[a-z0-9-]+$" },
     "title": { "type": "string" },
     "logline": { "type": "string" },

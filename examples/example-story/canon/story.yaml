@@ -1,3 +1,5 @@
+# The arc story format this story is written against (STORY-FORMAT.md).
+arc_format: 1
 slug: example-story
 title: The Keeper of Whitcombe Light
 logline: >
