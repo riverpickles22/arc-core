@@ -111,6 +111,24 @@ Both are optional. Canon plus these tools is a complete, useful system on its ow
 
 Licensed under the [Apache License 2.0](LICENSE) — the code, the schemas and
 `conventions.md` are free to use, modify and distribute, with an explicit
-patent grant. The **arc** name is not part of that grant: Apache 2.0 §6
-licenses no trademarks, so the name stays with the author while the work
-it names is open.
+patent grant.
+
+**The code is licensed; the name is not.** Apache 2.0 §6 says so directly:
+
+> This License does not grant permission to use the trade names, trademarks,
+> service marks, or product names of the Licensor, except as required for
+> reasonable and customary use in describing the origin of the Work […]
+
+So: fork it, ship it, build a product on it. Say your work is *built on arc*
+or *compatible with arc* — that is describing origin, and it is fine. Calling
+your own fork or service **arc** is not; the name stays with the author while
+the work it names is open.
+
+A story is not covered by any of this. This repo holds none, and canon and
+prose you write stay entirely yours, under whatever terms you choose.
+
+## Contributing
+
+Patches welcome, under Apache 2.0 with a [DCO](https://developercertificate.org/)
+sign-off — `git commit -s`, no CLA, no paperwork. See
+[CONTRIBUTING.md](CONTRIBUTING.md).
