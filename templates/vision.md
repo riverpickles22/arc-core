@@ -1,7 +1,8 @@
 # <Story Title> — Vision
 
 > The working-forwards document: what this book is, before it exists.
-> Directional, not binding — canon YAML is binding. Wikilink all entities: `[[char.example]]`.
+> Directional, not binding — canon YAML is binding. Wikilink every entity by
+> its id in double square brackets, so each noun is graph-addressable.
 
 ## High concept
 <!-- Logline. One or two sentences. -->

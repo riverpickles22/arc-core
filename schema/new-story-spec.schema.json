@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/new-story-spec.schema.json",
+  "title": "arc new-story spec — the answers a story is created from",
+  "description": "Input to tools/new-story.py, not a canon file. Every property is an answer about the story; there is deliberately no property for an id, slug, filename, era or status, because arc derives all of those. Unlike the canon schemas this one never validates anything on disk in a story — validate.py's schema_for() selects by file location, so a schema that maps to no canon path is inert there and only this tool loads it.",
+  "type": "object",
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "logline": { "type": "string", "minLength": 1, "description": "one or two sentences: what the book is" },
+    "genre": { "type": "string" },
+    "setting": { "type": "string", "description": "free text, in the author's words — roughly where and when" },
+    "pov": { "type": "string", "description": "may be an open question this early" },
+    "themes": { "type": "array", "items": { "type": "string" } },
+    "period": {
+      "type": "object",
+      "description": "when the story happens; becomes its era",
+      "properties": {
+        "start": { "$ref": "common.schema.json#/$defs/date" },
+        "end": { "$ref": "common.schema.json#/$defs/date" },
+        "name": { "type": "string", "description": "what to call this stretch of time" },
+        "backstory_start": {
+          "$ref": "common.schema.json#/$defs/date",
+          "description": "emits an off-page era from here to the day before `start`, so dates before page one have somewhere to anchor. Required in practice whenever anyone is born before the story opens."
+        }
+      },
+      "required": ["start", "end"],
+      "additionalProperties": false
+    },
+    "protagonist": {
+      "type": "object",
+      "description": "the character the story starts with",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "summary": { "type": "string", "minLength": 1, "description": "who they are" },
+        "at_start": { "type": "string", "description": "what is true of them when the book opens; becomes their first state" },
+        "species": { "type": "string", "description": "defaults to human; animals are characters too" },
+        "born": { "$ref": "common.schema.json#/$defs/date" }
+      },
+      "required": ["name", "summary"],
+      "additionalProperties": false
+    },
+    "place": {
+      "type": "object",
+      "description": "where the story opens, when the author has said",
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "kind": { "$ref": "place.schema.json#/properties/kind" },
+        "summary": { "type": "string" },
+        "real": { "type": "boolean" },
+        "coordinates": { "$ref": "place.schema.json#/properties/coordinates" }
+      },
+      "required": ["name", "kind"],
+      "additionalProperties": false
+    }
+  },
+  "required": ["title", "logline", "period", "protagonist"],
+  "additionalProperties": false
+}

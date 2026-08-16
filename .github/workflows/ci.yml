@@ -38,5 +38,8 @@ jobs:
       - name: story shape — the files every story owes (negative-tested)
         run: python3 tools/test_story_shape.py
 
+      - name: templates survive being copied into a story
+        run: python3 tools/test_templates.py
+
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py

@@ -29,8 +29,12 @@ Run after any canon change:
 
 ```bash
 # from the root of this repo
-../arc-core/.venv/bin/python ../arc-core/tools/validate.py .
+bin/validate
 ```
+
+That wrapper holds nothing but the answer to "where is arc-core"; it honours
+`ARC_CORE_PATH` and says so when it cannot find a checkout. Without it, the
+long form is `../arc-core/.venv/bin/python ../arc-core/tools/validate.py .`
 
 Checks schemas, ID/wikilink referential integrity, era containment of
 timerefs, and citation keys. A red validator blocks the commit.

@@ -1,0 +1,77 @@
+# A creation spec: the answers a new story is built from.
+#
+# WHAT THIS IS. The input contract for `tools/new-story.py`, a worked example
+# of it, and the fixture CI builds a story from. It is also the integration
+# surface for anything that is not Claude — another agent, an editor plugin,
+# a script — since producing this file is all it takes to create a conforming
+# arc story.
+#
+# WHAT THIS IS NOT: how an author starts a story. They say so in words and
+# answer a few questions; the agent fills this in on their behalf and shows
+# them the result before anything is written. Nobody should have to read YAML
+# to begin a novel, and this file is not the on-ramp.
+#
+# Every field below is an answer about the STORY. There is deliberately no
+# field for an entity id, a slug, a filename, an era id or a status — arc
+# derives all of those. If you find yourself wanting to specify one, that is
+# a gap in the tool rather than a gap in this file.
+#
+# Only `title`, `logline`, `period` and `protagonist` are required. Anything
+# the author does not know yet is omitted, never guessed: an absent field
+# means the story does not say, which is a fact worth keeping.
+
+title: The Signal Station
+logline: >
+  A wireless operator alone on a winter island copies a distress call no
+  other station heard, and has to decide what she owes a ship that may not
+  exist.
+
+# Optional. Free text, in the author's own words — nothing parses these.
+genre: literary fiction
+setting: An unnamed North Atlantic island, 1927
+pov: Close third on Alma throughout.
+themes:
+  - What one person owes a stranger they cannot see
+  - The difference between hearing and being believed
+
+# When the story happens. Dates take any ISO precision — "1927", "1927-11",
+# "1927-11-03" — and arc turns this into the story's era.
+period:
+  start: "1927"
+  end: "1928"
+  # Optional: what to call this stretch of time. Defaults to the story's name.
+  name: The winter on the island
+  # Optional, and worth giving whenever anyone is born before page one:
+  # it becomes an off-page era so backstory dates have somewhere to anchor.
+  # Without it, a birth date before `start` fails validation.
+  backstory_start: "1890"
+
+# The character the story starts with. `summary` is who they are; `at_start`
+# is what is true of them when the book opens — it becomes their first state.
+protagonist:
+  name: Alma Reidar
+  summary: >
+    The island's only wireless operator, thirty-seven, four winters into a
+    posting meant to last one. Precise about her logs in a way that reads as
+    diligence and is closer to superstition.
+  at_start: >
+    Alone at the station through the winter relief's delay, keeping the watch
+    schedule of a three-person crew by herself.
+  # Optional. Defaults to human — a dog, a ship's cat and a horse are all
+  # characters in arc, and they belong here too.
+  species: human
+  # Optional. Anchors inside `backstory_start` above.
+  born: "1890"
+
+# Optional: where the story opens. Omit it if the author has not said.
+place:
+  name: The signal station
+  # One of place.schema.json's kinds — the agent picks it from the author's
+  # words rather than asking. See STORY-FORMAT.md.
+  kind: building
+  summary: >
+    A tin-roofed hut above the landing, a mast guyed against the wind, and a
+    stove that has to be fed before the batteries are.
+  # Optional. Real places carry real coordinates; invented ones need none,
+  # and a story with no coordinates simply has no map yet.
+  real: false
