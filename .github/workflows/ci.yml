@@ -35,5 +35,8 @@ jobs:
       - name: provenance registers (negative-tested)
         run: python3 tools/test_provenance.py
 
+      - name: story shape — the files every story owes (negative-tested)
+        run: python3 tools/test_story_shape.py
+
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py

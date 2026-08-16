@@ -50,6 +50,15 @@ ID_FIELD_RE = re.compile(
     r"^(char|place|faction|obj|event|era|tp|rel|ch)\.[a-z0-9-]+(\.[a-z0-9-]+)*$"
 )
 
+# The canon files a story cannot omit (conventions §9). Everything else under
+# canon/ is optional; these three are read unconditionally by export-canon.py,
+# so a story without them parses fine here and then 500s the viewer.
+REQUIRED_CANON = (
+    ("story.yaml", "the story manifest — slug, title, logline, protagonists"),
+    ("timeline.yaml", "at least one era; every timeref anchors to one"),
+    ("relationships.yaml", "a relationships: key, which may be empty"),
+)
+
 findings = []
 
 
@@ -66,11 +75,15 @@ def load_yaml(path):
 
 
 def schema_for(path, story_dir):
+    # Unknown locations return None so the caller reports "no schema mapping"
+    # — a story that invents canon/entities/dragons/ gets told so, rather than
+    # taking the validator down with it.
     rel = path.relative_to(story_dir / "canon")
     parts = rel.parts
     if parts[0] == "entities":
+        sub = parts[1] if len(parts) > 1 else ""
         return {"characters": "character", "places": "place",
-                "factions": "faction", "objects": "object"}[parts[1]]
+                "factions": "faction", "objects": "object"}.get(sub)
     if parts[0] == "events":
         return "event"
     return {"relationships.yaml": "relationship", "timeline.yaml": "timeline",
@@ -87,6 +100,14 @@ def date_key(d):
 def date_key_end(d):
     parts = [int(p) for p in d.split("-")]
     return tuple(parts + [12, 31][len(parts) - 1:] if len(parts) < 3 else parts)
+
+
+def ids_in(data, key):
+    """The ids of a collection file's members. A member that is malformed or
+    unnamed is the schema pass's finding to report, not this pass's to die on
+    — which matters most under --skip-schema, where nothing else looks."""
+    return [item["id"] for item in (data.get(key) or [])
+            if isinstance(item, dict) and "id" in item]
 
 
 def extract_span_date(v):
@@ -128,6 +149,16 @@ def main():
     docs_dir = story_dir / "docs"
     research_dir = story_dir / "research"
 
+    # --- pass 0: the three files every story owes
+    #
+    # An app cannot load a story without these — export-canon.py reads all
+    # three unconditionally — so their absence is a finding here rather than a
+    # traceback later. Reported per file, naming what the file is for, because
+    # this is the first thing a brand-new story gets wrong.
+    for name, why in REQUIRED_CANON:
+        if not (canon_dir / name).exists():
+            flag(canon_dir / name, f"missing — every story needs canon/{name} ({why})")
+
     # --- load schemas
     registry = None
     schemas = {}
@@ -164,26 +195,29 @@ def main():
                 if name != "event":
                     docs_of[data["id"]] = f
         elif name == "timeline":
-            for era in data.get("eras", []):
-                defined[era["id"]] = f
-            for a in data.get("anchors", []):
-                defined[a["id"]] = f
+            for eid in ids_in(data, "eras") + ids_in(data, "anchors"):
+                defined[eid] = f
         elif name == "relationship":
-            for r in data.get("relationships", []):
-                defined[r["id"]] = f
+            for rid in ids_in(data, "relationships"):
+                defined[rid] = f
         elif name == "chapters":
-            for c in data.get("chapters", []):
-                defined[c["id"]] = f
+            for cid in ids_in(data, "chapters"):
+                defined[cid] = f
         elif name == "themes":
-            for th in data.get("themes", []):
-                defined[th["id"]] = f
+            for tid in ids_in(data, "themes"):
+                defined[tid] = f
 
     # --- timeline spans for era containment
-    timeline = load_yaml(canon_dir / "timeline.yaml") or {}
+    # Absence is already reported by pass 0; read it only if it is there, so a
+    # story missing its timeline gets that finding rather than a traceback.
+    tl_file = canon_dir / "timeline.yaml"
+    timeline = (load_yaml(tl_file) if tl_file.exists() else None) or {}
     era_spans = {}
     for era in timeline.get("eras", []):
-        s = extract_span_date(era["span"].get("start"))
-        e = extract_span_date(era["span"].get("end"))
+        if not isinstance(era, dict) or "id" not in era:
+            continue          # the schema pass reports the shape; don't crash on it
+        s = extract_span_date((era.get("span") or {}).get("start"))
+        e = extract_span_date((era.get("span") or {}).get("end"))
         era_spans[era["id"]] = (date_key(s) if s else None,
                                 date_key_end(e) if e else None)
 

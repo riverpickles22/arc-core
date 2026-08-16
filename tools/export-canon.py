@@ -25,6 +25,31 @@ from pathlib import Path
 import yaml
 
 
+def read_required(path, key=None):
+    """A canon file the export cannot do without. Missing or malformed, it
+    exits with one sentence naming the file and pointing at the validator —
+    this runs behind GET /api/canon, so the alternative is a traceback in the
+    backend log and 'Failed to load canon' in the viewer."""
+    if not path.exists():
+        sys.exit(f"canon is incomplete: {path} does not exist.\n"
+                 f"  run validate.py on this story — it names every missing piece.")
+    doc = yaml.safe_load(path.read_text())
+    if doc is None:
+        sys.exit(f"canon is incomplete: {path} is empty.")
+    if key is not None and key not in doc:
+        sys.exit(f"canon is malformed: {path} has no `{key}:` key.")
+    # A present-but-empty collection (`relationships:` with nothing under it)
+    # is a story with none yet, not a broken one — the apps want [].
+    return (doc[key] or []) if key else doc
+
+
+def read_optional(path, key):
+    """A canon file a story may not have yet. Absent or empty is [], not a crash."""
+    if not path.exists():
+        return []
+    return (yaml.safe_load(path.read_text()) or {}).get(key) or []
+
+
 def main():
     if len(sys.argv) < 2:
         sys.exit(__doc__)
@@ -34,24 +59,22 @@ def main():
         sys.exit(f"not a story directory (no canon/): {story_dir}")
     out_arg = sys.argv[2] if len(sys.argv) > 2 else "-"
 
-    chapters_file = canon / "chapters.yaml"
-    themes_file = canon / "themes.yaml"
     doc = {
-        "story": yaml.safe_load((canon / "story.yaml").read_text()),
-        "timeline": yaml.safe_load((canon / "timeline.yaml").read_text()),
+        "story": read_required(canon / "story.yaml"),
+        "timeline": read_required(canon / "timeline.yaml"),
         "entities": {},
         "events": {},
-        "relationships": yaml.safe_load((canon / "relationships.yaml").read_text())["relationships"],
-        "chapters": yaml.safe_load(chapters_file.read_text())["chapters"] if chapters_file.exists() else [],
-        "themes": yaml.safe_load(themes_file.read_text())["themes"] if themes_file.exists() else [],
+        "relationships": read_required(canon / "relationships.yaml", "relationships"),
+        "chapters": read_optional(canon / "chapters.yaml", "chapters"),
+        "themes": read_optional(canon / "themes.yaml", "themes"),
         "generated_from": f"{story_dir.name}/canon",
     }
-    for f in sorted((canon / "entities").rglob("*.yaml")):
-        e = yaml.safe_load(f.read_text())
-        doc["entities"][e["id"]] = e
-    for f in sorted((canon / "events").rglob("*.yaml")):
-        e = yaml.safe_load(f.read_text())
-        doc["events"][e["id"]] = e
+    for kind in ("entities", "events"):
+        for f in sorted((canon / kind).rglob("*.yaml")):
+            e = yaml.safe_load(f.read_text())
+            if not isinstance(e, dict) or "id" not in e:
+                sys.exit(f"canon is malformed: {f} has no `id:`.")
+            doc[kind][e["id"]] = e
 
     payload = json.dumps(doc, ensure_ascii=False, indent=1)
     summary = (f"{len(doc['entities'])} entities, {len(doc['events'])} events, "
