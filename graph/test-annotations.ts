@@ -1,7 +1,7 @@
 // Anchor durability: the property the whole annotation surface rests on.
 // A note in the wrong place is worse than no note, so the only acceptable
 // failure mode is an honest orphan.
-import { orphanedAnnotations, paragraphsOf, resolveAnchor, resolveAnnotations, type AnnotationLike } from './annotations.ts'
+import { isSceneScoped, orphanedAnnotations, paragraphsOf, resolveAnchor, resolveAnnotations, type AnnotationLike } from './annotations.ts'
 
 let failures = 0
 const expect = (cond: boolean, what: string) => {
@@ -66,5 +66,51 @@ expect(!orphans.includes('note.003'), 'orphan set: a dropped note is not the aut
 expect(!orphans.includes('note.001'), 'orphan set: a resolving note is not an orphan')
 expect(resolved[0].id === 'note.002' || resolved[0].anchor.scene === 'sc.01-1', 'resolution sorts by scene then position')
 
+// 8. a note about the SCENE, not a passage in it — the shape an observation
+//    about something ABSENT must take, since absent text cannot be quoted.
+//    It holds against any body the scene ever has.
+const SCENE_NOTE = { scene: 'sc.01-1' }
+expect(isSceneScoped(SCENE_NOTE), 'an anchor with no paragraph is scene-scoped')
+expect(!isSceneScoped(a1), 'an anchor with a paragraph is not')
+
+const rs = resolveAnchor(SCENE_NOTE, SCENE)
+expect(rs.state === 'resolved' && rs.paragraph === null,
+  'a scene note resolves, to no particular paragraph')
+
+// The property the feature rests on: "we never reference the tide here" must
+// survive a rewrite that still never references the tide.
+for (const [label, body] of [
+  ['a total rewrite', 'Nothing of the original survives. Not one word of it.'],
+  ['insertion above', WITH_INSERT],
+  ['reordering', REORDERED],
+  ['a single paragraph', 'One paragraph now.'],
+  ['an empty scene', ''],
+] as const) {
+  const r = resolveAnchor(SCENE_NOTE, body)
+  expect(r.state === 'resolved', `a scene note survives ${label}`)
+}
+
+expect(resolveAnchor(SCENE_NOTE, null).state === 'no-scene',
+  'deleting the scene is the one thing that breaks a scene note')
+
+// 9. a scene note leads its scene: it is about everything below it. An orphan
+//    also has no paragraph, and belongs at the other end.
+const MIXED: AnnotationLike[] = [
+  { id: 'note.b', anchor: a1, body: 'on a passage', status: 'open' },
+  { id: 'note.c', anchor: { scene: 'sc.01-1', paragraph: 0, quote: 'gone entirely' }, body: 'orphan', status: 'open' },
+  { id: 'note.a', anchor: SCENE_NOTE, body: 'the tide is never mentioned', status: 'open' },
+]
+const order = resolveAnnotations(MIXED, () => SCENE).map(n => n.id)
+expect(order[0] === 'note.a', 'a scene note sorts first — it is about everything below it')
+expect(order[2] === 'note.c', 'an orphan sorts last — it has lost its place')
+
+// 10. and it is never an orphan, however the prose is rewritten
+const afterRewrite = resolveAnnotations(
+  [{ id: 'note.a', anchor: SCENE_NOTE, body: 'the tide is never mentioned', status: 'open' }],
+  () => 'Every word replaced.',
+)
+expect(orphanedAnnotations(afterRewrite).length === 0,
+  'a scene note is never reported as an orphan, whatever happens to the prose')
+
 if (failures) { console.error(`annotation anchors: ${failures} failure(s)`); process.exit(1) }
-console.log('annotation anchors: notes follow their quote, orphan honestly, and never relocate on a guess')
+console.log('annotation anchors: notes follow their quote, orphan honestly, never relocate on a guess, and a scene note holds')

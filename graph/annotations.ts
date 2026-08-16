@@ -15,17 +15,30 @@
 // and a note that resolves to none of them becomes ORPHANED, keeping its
 // quote, rather than being relocated on a guess. Honest beats tidy.
 //
+// A note may also be about the SCENE rather than a passage in it, and then it
+// carries only the first fact. That is not a weaker anchor — it is a different
+// claim, and a stronger one: it holds against any body the scene ever has, and
+// can never drift or orphan. It is also the only shape available for the most
+// useful reading note there is, the observation that something is MISSING —
+// "we never reference the tide here" has nothing to quote, and a rewrite that
+// still fails to mention the tide must leave the note standing.
+//
 // Pure and zero-dependency: the backend, the viewer, and the CLIs all resolve
 // anchors the same way, and none of them needs the others running.
 
 export interface Anchor {
   /** the scene the note was made in — permanent */
   scene: string
-  /** 0-based paragraph index at the time the note was made */
-  paragraph: number
-  /** the selected text, verbatim — the durable fallback */
-  quote: string
+  /** 0-based paragraph index at the time the note was made. Absent means the
+   *  note is about the whole scene. */
+  paragraph?: number
+  /** the selected text, verbatim — the durable fallback. Meaningless without
+   *  a paragraph, and the schema refuses that combination. */
+  quote?: string
 }
+
+/** Is this anchor about the section rather than a sentence in it? */
+export const isSceneScoped = (a: Anchor): boolean => a.paragraph == null
 
 export interface AnnotationLike {
   id: string
@@ -75,26 +88,33 @@ export function resolveAnchor(anchor: Anchor, sceneBody: string | null): AnchorR
   if (sceneBody === null) {
     return { state: 'no-scene', paragraph: null, note: `scene ${anchor.scene} no longer exists` }
   }
+  // A scene note is about the section, so any body the section has satisfies
+  // it. Returning here is what guarantees it can never be reported as drifted
+  // or orphaned — states that describe a quote, which it never had. It also
+  // narrows the index for everything below.
+  const index = anchor.paragraph
+  if (index == null) return { state: 'resolved', paragraph: null }
+
   const paras = paragraphsOf(sceneBody).map(norm)
-  const quote = norm(anchor.quote)
+  const quote = norm(anchor.quote ?? '')
   if (!quote) {
     // A note with no quote can only trust its index — say so rather than
     // pretending the anchor is strong.
-    const ok = anchor.paragraph < paras.length
+    const ok = index < paras.length
     return ok
-      ? { state: 'resolved', paragraph: anchor.paragraph }
+      ? { state: 'resolved', paragraph: index }
       : { state: 'orphaned', paragraph: null, note: 'no quote recorded and the paragraph is gone' }
   }
 
-  const at = paras[anchor.paragraph]
-  if (at !== undefined && at.includes(quote)) return { state: 'resolved', paragraph: anchor.paragraph }
+  const at = paras[index]
+  if (at !== undefined && at.includes(quote)) return { state: 'resolved', paragraph: index }
 
   const found = paras.findIndex(p => p.includes(quote))
   if (found > -1) {
     return {
       state: 'drifted',
       paragraph: found,
-      note: `the passage moved from paragraph ${anchor.paragraph + 1} to ${found + 1}`,
+      note: `the passage moved from paragraph ${index + 1} to ${found + 1}`,
     }
   }
   return { state: 'orphaned', paragraph: null, note: 'the passage this note was made on is no longer in the scene' }
@@ -103,6 +123,13 @@ export function resolveAnchor(anchor: Anchor, sceneBody: string | null): AnchorR
 export interface ResolvedAnnotation extends AnnotationLike {
   resolution: AnchorResolution
 }
+
+/** Where a mark sits within its scene, for ordering. Two kinds resolve to no
+ *  paragraph and they belong at opposite ends: a scene note is about
+ *  everything below it, so it leads; an orphan has lost its place and trails
+ *  the passages that still have one. */
+const sortPos = (m: { anchor: Anchor; resolution: AnchorResolution }): number =>
+  m.resolution.paragraph ?? (isSceneScoped(m.anchor) ? -1 : Number.MAX_SAFE_INTEGER)
 
 /** Resolve a set of notes against the prose as it stands. `sceneBody` looks
  *  up a scene's current text, returning null when the scene is gone. */
@@ -114,7 +141,7 @@ export function resolveAnnotations(
     .map(n => ({ ...n, resolution: resolveAnchor(n.anchor, sceneBody(n.anchor.scene)) }))
     .sort((a, b) =>
       a.anchor.scene.localeCompare(b.anchor.scene) ||
-      (a.resolution.paragraph ?? Number.MAX_SAFE_INTEGER) - (b.resolution.paragraph ?? Number.MAX_SAFE_INTEGER) ||
+      sortPos(a) - sortPos(b) ||
       a.id.localeCompare(b.id))
 }
 
@@ -143,7 +170,7 @@ export function resolveLocks(
     .map(l => ({ ...l, resolution: resolveAnchor(l.anchor, sceneBody(l.anchor.scene)) }))
     .sort((a, b) =>
       a.anchor.scene.localeCompare(b.anchor.scene) ||
-      (a.resolution.paragraph ?? Number.MAX_SAFE_INTEGER) - (b.resolution.paragraph ?? Number.MAX_SAFE_INTEGER) ||
+      sortPos(a) - sortPos(b) ||
       a.id.localeCompare(b.id))
 }
 

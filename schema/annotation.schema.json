@@ -11,7 +11,7 @@
     },
     "anchor": {
       "type": "object",
-      "description": "Scene id, paragraph index, and the quoted selection \u2014 resolved in that order of durability.",
+      "description": "What the note is about. A passage note carries scene, paragraph and quote \u2014 resolved in that order of durability. A scene note carries the scene alone: it is about the section rather than a sentence in it, which is the only shape an observation about something ABSENT can take, since absent text cannot be quoted. A scene note can never drift and never orphan; only deleting the scene breaks it.",
       "properties": {
         "scene": {
           "type": "string",
@@ -19,17 +19,20 @@
         },
         "paragraph": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "description": "0-based paragraph index when the note was made. Absent means the note is about the whole scene."
         },
         "quote": {
-          "type": "string"
+          "type": "string",
+          "description": "The selected text, verbatim \u2014 the durable fallback when indices shift. Requires a paragraph: a quote with no index is an incoherent anchor, not a scene note."
         }
       },
       "required": [
-        "scene",
-        "paragraph",
-        "quote"
+        "scene"
       ],
+      "dependentRequired": {
+        "quote": ["paragraph"]
+      },
       "additionalProperties": false
     },
     "body": {

@@ -422,7 +422,9 @@ export interface AttentionResponse {
   /** notes whose anchor no longer resolves — proven, and the author's to
    *  re-place; arc never guesses where a thought now belongs (§14). */
   orphanedNotes: number
-  orphanedAnnotations: { id: string; body: string; scene: string; quote: string; why: string }[]
+  /** `quote` is absent when the note was about the whole scene: it never had
+   *  one, and only a deleted scene can strand such a note here. */
+  orphanedAnnotations: { id: string; body: string; scene: string; quote?: string; why: string }[]
 }
 
 // ---- the chat contract (/api/chat) --------------------------------------

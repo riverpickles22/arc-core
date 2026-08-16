@@ -379,6 +379,29 @@ yet. An annotation is a reaction to something that is *already on the
 page*. A note may promote into material, an obligation, or proposed canon
 when its scope outgrows the passage; `links` records what it became.
 
+A note may instead be about the **whole scene**, and then it carries the
+scene alone:
+
+```yaml
+id: note.020
+anchor:
+  scene: sc.00-1          # and nothing else
+body: >
+  We never reference the tide in this section, which would be a great
+  description for this setting.
+status: open
+```
+
+That is not a weaker anchor; it is a different claim, and the only shape
+available for the most useful reading note there is — the observation that
+something is **missing**. Absent text cannot be quoted, and a rewrite that
+still fails to mention the tide must leave the note standing. So a scene
+note resolves against any body its scene ever has: it can never drift and
+never orphan, and only deleting the scene breaks it.
+
+A `quote` therefore requires a `paragraph`. Text without the index it came
+from is neither shape, and the schema refuses it.
+
 **The anchor is where the thought occurred, not necessarily what it is
 about.** An author may highlight one sentence and write something that
 implicates the whole book. Nothing in the record should assume the note's
@@ -392,6 +415,9 @@ Rules:
   text, and waits for the author. It is never silently reattached to
   whatever now occupies its old index: a note in the wrong place is worse
   than no note, because it costs trust in every other note.
+- A scene note has only the first rung of that ladder, and the first rung is
+  permanent. It leads its scene's notes, because it is about everything
+  below them.
 - Orphaned notes are a **proven** finding (§11) — it is a fact that the
   passage is gone — and belong wherever findings are surfaced. Where the
   thought now belongs is the author's to say.

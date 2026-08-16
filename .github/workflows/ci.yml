@@ -44,5 +44,8 @@ jobs:
       - name: story format version (negative-tested)
         run: python3 tools/test_format_version.py
 
+      - name: annotation scope — passage or section (negative-tested)
+        run: python3 tools/test_annotation_scope.py
+
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py
