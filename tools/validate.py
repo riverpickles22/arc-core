@@ -43,7 +43,6 @@ except ImportError:
 CORE = Path(__file__).resolve().parent.parent
 SCHEMA_DIR = CORE / "schema"
 
-ID_RE = re.compile(r"^[a-z]+\.[a-z0-9-]+(\.[a-z0-9-]+)*$")
 WIKILINK_RE = re.compile(r"\[\[([a-z]+\.[a-z0-9.-]+)(?:\|[^\]]*)?\]\]")
 CITE_RE = re.compile(r"\[@([a-z0-9-]+)\]")
 ID_FIELD_RE = re.compile(

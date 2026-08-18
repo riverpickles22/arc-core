@@ -40,11 +40,15 @@ export interface Anchor {
 /** Is this anchor about the section rather than a sentence in it? */
 export const isSceneScoped = (a: Anchor): boolean => a.paragraph == null
 
+/** A note's lifecycle. Named once here so the wire contract and the viewer
+ *  cannot drift into disagreeing about what a status may be. */
+export type AnnotationStatus = 'open' | 'working' | 'resolved' | 'dropped'
+
 export interface AnnotationLike {
   id: string
   anchor: Anchor
   body: string
-  status?: 'open' | 'working' | 'resolved' | 'dropped'
+  status?: AnnotationStatus
   created_at?: string
   /** ids this note produced when its scope outgrew the passage */
   links?: string[]

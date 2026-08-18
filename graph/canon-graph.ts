@@ -14,7 +14,7 @@
 // ---- the HTTP API wire format (types only; see api-types.ts) ------------
 
 export type * from './api-types.ts'
-export type { Anchor, AnchorResolution, AnchorState, AnnotationLike, ResolvedAnnotation, LockLike, ResolvedLock } from './annotations.ts'
+export type { Anchor, AnchorResolution, AnchorState, AnnotationLike, AnnotationStatus, ResolvedAnnotation, LockLike, ResolvedLock } from './annotations.ts'
 
 // ---- minimal structural types (consumers keep their richer ones) --------
 
@@ -264,8 +264,9 @@ export function extantAt(entity: EntityLike, tEnd: number): boolean {
   return true
 }
 
-/** Does a span (open-ended allowed) cover key T? A missing span covers everything. */
-export function spanActive(span: SpanLike | undefined, tEnd: number): boolean {
+/** Does a span (open-ended allowed) cover key T? A missing span covers
+ *  everything. Internal: consumers ask through extantAt or neighbors. */
+function spanActive(span: SpanLike | undefined, tEnd: number): boolean {
   const s = dateOf(span?.start)
   const e = dateOf(span?.end)
   if (s && dk(s) > tEnd) return false

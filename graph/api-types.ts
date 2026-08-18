@@ -153,14 +153,23 @@ export interface RatifyRuleResponse {
 /** Annotations (conventions §14) with their anchors resolved against the
  *  prose as it stands — resolved, drifted, or honestly orphaned. */
 export interface AnnotationsResponse { annotations: import('./annotations.ts').ResolvedAnnotation[] }
+/** `paragraph` and `quote` are optional together: their ABSENCE is the
+ *  meaning, a note about the whole scene rather than a passage (conventions
+ *  §14). Coercing a missing paragraph to a number would anchor the note to a
+ *  paragraph that does not exist. */
 export interface CreateAnnotationRequest {
-  scene: string; paragraph: number; quote: string; body: string
+  scene: string; paragraph?: number; quote?: string; body: string
   kind?: 'note' | 'keypoint'; by?: 'author' | 'agent'
 }
 /** Hard delete — keypoints only. Notes are thoughts, and thoughts are
  *  resolved or dropped, never erased. */
 export interface DeleteAnnotationRequest { id: string }
-export interface UpdateAnnotationRequest { id: string; status: 'open' | 'working' | 'resolved' | 'dropped' }
+/** A patch: `id` names the annotation, everything else is what changes. */
+export interface UpdateAnnotationRequest {
+  id: string
+  status?: import('./annotations.ts').AnnotationStatus
+  body?: string
+}
 
 export interface OkResponse { ok: true }
 export interface ApiErrorResponse { error: string }
@@ -348,6 +357,11 @@ export interface StreamMessage {
 export interface RunsResponse { runs: RunSummary[] }
 export interface RunResponse { run: RunSummary }
 export interface RunDetailResponse { run: RunSummary; events: RunEventPayload[] }
+/** The three write routes on runs — POST /api/runs, /api/runs/:id/events, and
+ *  /api/runs/:id/decision. Their only caller is hooks/arc-hook.mjs, which is
+ *  plain JavaScript and cannot be typed against them, so these carry no
+ *  TypeScript importer. They are the contract regardless; do not read the
+ *  absence of an importer as evidence the routes are gone. */
 export interface OpenRunRequest { prompt: string; source?: RunSummary['source'] }
 export interface ObserveRunRequest { detail: unknown }
 export interface RunDecisionRequest { decision: 'accepted' | 'rejected' | 'abandoned'; note?: string }
