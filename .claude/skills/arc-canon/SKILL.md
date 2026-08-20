@@ -186,6 +186,40 @@ the work the verb should" — that correction is evidence about their voice.
 Offer to record it; never write a rule into `style.md` on your own
 initiative. A voice nobody chose is not a voice.
 
+**A clean pass is a REDRAFT, and you call arc's, never your own.** When the
+author asks for a scene or passage to be rebuilt — reworked, re-architected,
+"take a fresh pass" — that is the redraft operation, which arc-backend owns
+(conventions §10, the three verbs). Do not improvise a rewrite from this
+skill's rules: a second redraft prompt would be a fork of the pass that
+drifts the first time either side changes, and it would run without the
+proven gates. Invoke the real one:
+
+```bash
+# with nothing running (the CLI is the same operation as the viewer's):
+cd <arc-backend> && ARC_STORY_PATH=<story> npm run redraft -- sc.00-1
+# a passage, 1-based as the manuscript shows paragraphs; optional guidance:
+npm run redraft -- sc.00-1 --paragraphs 3-6 --guidance "slower; let the tide work"
+
+# when the backend is up:
+curl -s -X POST localhost:8787/api/prose/redraft \
+  -H 'content-type: application/json' \
+  -d '{"scene":"sc.00-1","paragraphs":[2,5],"guidance":"..."}'
+```
+
+The CLI needs no server — it drafts on your own login when no API key is
+configured — so this skill's nothing-running property holds. `--paragraphs`
+on the CLI is 1-based; the HTTP body's `paragraphs` is 0-based, inclusive.
+
+**Reading the answer.** The result lands in the working tree as an ordinary
+draft; generating is never accepting, so the author reviews it through the
+gate as always. The reply has two registers and you must not blur them
+(conventions §11): a **refusal is proven and final** — a lock (HTTP 423
+naming it), the validator, or a quoted `must_withhold` literal said no, and
+nothing was written; your move is the locked-prose protocol above, never a
+retry that works around the gate. The **briefing is argued** — the pass's
+own claims about checklist, must_establish, motifs, leakage — and you relay
+it to the author as claims to judge, never as verdicts.
+
 ## 10. Working the author's notes
 
 The author reads the manuscript and leaves **annotations** — thoughts
