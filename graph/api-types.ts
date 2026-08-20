@@ -146,15 +146,23 @@ export interface RuleEvidence { scene: string; wrote: string; kept: string }
  *
  *  `source` says what the evidence diffs: 'draft' — arc's draft against what
  *  the author kept (A7-6); 'revision' — the author's own accepted prose
- *  against their hand rewrite of it, the purest voice signal there is.
- *  Absent means draft: queues written before the field existed stay valid. */
+ *  against their hand rewrite of it, the purest voice signal there is;
+ *  'refusal' — prose arc offered and the author declined, which is the only
+ *  decision git never records.
+ *  Absent means draft: queues written before the field existed stay valid.
+ *
+ *  `layer` is arc's RECOMMENDATION of where the rule belongs, shown on the
+ *  card. It decides nothing: the author's click chooses the file, because
+ *  letting a model-chosen field pick which contract gets written would be the
+ *  promotion decision, and that is theirs. Absent means no recommendation. */
 export interface ProposedRule {
   id: string
   rule: string
   section: string | null
   at: string
   evidence: RuleEvidence[]
-  source?: 'draft' | 'revision'
+  source?: 'draft' | 'revision' | 'refusal'
+  layer?: 'story' | 'author'
 }
 
 export interface StyleResponse {
