@@ -1,0 +1,24 @@
+# The keypoint arc-backend's createAnnotation actually writes.
+#
+# This file exists so two repos cannot drift apart quietly. arc-core's
+# tools/test_keypoint_shape.py validates it against annotation.schema.json;
+# arc-backend's test/annotations.test.ts calls createAnnotation and asserts
+# what it writes has this exact shape. Change the backend and the backend's
+# test fails; change the schema and this one does.
+#
+# It replaces a dict that was typed out beside the test with a comment saying
+# it "mirrored createAnnotation field for field" — which is accurate right up
+# until it is not, and nothing would have noticed.
+#
+# The values are a specimen; only the SHAPE is the contract — which keys are
+# present, which are absent, and of what type. `status` is absent on purpose
+# and its absence is the point.
+id: note.001
+anchor:
+  scene: sc.01-1
+  paragraph: 4
+  quote: the paragraph's own text
+body: what this passage must get across
+kind: keypoint
+by: agent
+created_at: '2026-08-20'

@@ -24,9 +24,12 @@ import sys
 import tempfile
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parent.parent
 EXAMPLE = ROOT / "examples" / "example-story"
 SKILL = ROOT / ".claude" / "skills" / "arc-canon" / "SKILL.md"
+SPECIMEN = ROOT / "schema" / "fixtures" / "keypoint-from-backend.yaml"
 PY = sys.executable
 
 SCENE = """---
@@ -57,6 +60,25 @@ def documented_keypoint_fields() -> dict:
             raise SystemExit(f"FAIL: §11's documented keypoint has no {required!r}")
     if "status" in fields:
         raise SystemExit("FAIL: §11 now documents a status on a keypoint — schema and code disagree")
+    return fields
+
+
+def backend_specimen() -> dict:
+    """The keypoint arc-backend writes, from the specimen both repos share.
+
+    Missing or statusful means the contract has been edited without its other
+    half; raise rather than fall back to a guess.
+    """
+    if not SPECIMEN.exists():
+        raise SystemExit(f"FAIL: the shared keypoint specimen is missing ({SPECIMEN})")
+    fields = yaml.safe_load(SPECIMEN.read_text())
+    for required in ("id", "anchor", "body", "kind", "by"):
+        if required not in fields:
+            raise SystemExit(f"FAIL: the shared specimen has no {required!r}")
+    if fields.get("kind") != "keypoint":
+        raise SystemExit("FAIL: the shared specimen is no longer a keypoint")
+    if "status" in fields:
+        raise SystemExit("FAIL: the shared specimen carries a status — schema and backend disagree")
     return fields
 
 
@@ -111,17 +133,13 @@ def main() -> int:
         expect(r.returncode == 0,
                f"a keypoint written as arc-canon SKILL.md §11 instructs must validate:\n{r.stdout}{r.stderr}")
 
-        # 2. The shape the running backend actually writes. createAnnotation
-        #    builds {id, anchor, body, kind, by, created_at} and deliberately
-        #    omits status — mirrored here field for field.
-        from_backend = {
-            "id": "note.001",
-            "anchor": {"scene": "sc.01-1", "paragraph": 4, "quote": "the paragraph's own text"},
-            "body": "what this passage must get across",
-            "kind": "keypoint",
-            "by": "agent",
-            "created_at": "2026-08-20",
-        }
+        # 2. The shape the running backend actually writes — read from the
+        #    shared specimen, not typed out here. arc-backend's
+        #    test/annotations.test.ts holds createAnnotation's real output to
+        #    the same file, so the two halves cannot drift apart in silence.
+        #    A dict copied into this file would only ever prove that whoever
+        #    wrote it believed the backend wrote that.
+        from_backend = backend_specimen()
         r = run(story_with(tmp, "from-backend", from_backend))
         expect(r.returncode == 0,
                f"the keypoint arc-backend writes must validate:\n{r.stdout}{r.stderr}")
