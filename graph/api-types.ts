@@ -148,7 +148,10 @@ export interface RuleEvidence { scene: string; wrote: string; kept: string }
  *  the author kept (A7-6); 'revision' — the author's own accepted prose
  *  against their hand rewrite of it, the purest voice signal there is;
  *  'refusal' — prose arc offered and the author declined, which is the only
- *  decision git never records.
+ *  decision git never records; 'history' — successive accepted states of the
+ *  manuscript, where the author ratified the movement but either side may
+ *  have been machine-drafted on their behalf. The weakest kind, and labelled
+ *  so nobody reads it as a hand edit.
  *  Absent means draft: queues written before the field existed stay valid.
  *
  *  `layer` is arc's RECOMMENDATION of where the rule belongs, shown on the
@@ -161,14 +164,52 @@ export interface ProposedRule {
   section: string | null
   at: string
   evidence: RuleEvidence[]
-  source?: 'draft' | 'revision' | 'refusal'
+  source?: 'draft' | 'revision' | 'refusal' | 'history'
   layer?: 'story' | 'author'
+}
+
+/** A touchstone arc has argued for — a calibration passage, not a rule.
+ *
+ *  Its own type, deliberately not a `kind` on ProposedRule: RuleEvidence
+ *  requires `wrote` and `kept`, and a touchstone has one passage and no
+ *  before/after. Overloading the rule shape would mean the queue's tolerant
+ *  parser silently dropped touchstones on the next read.
+ *
+ *  The passage is materialized from the scene file by the backend, never
+ *  written by a model — the same trust property rules have. */
+export interface ProposedTouchstone {
+  id: string
+  /** The quality it calibrates, e.g. "Slow time (sea, smell-first opening)". */
+  quality: string
+  scene: string
+  /** The prose file, e.g. prose/ch-00/scene-01.md — the "from" in the label. */
+  file: string
+  paragraph: number
+  passage: string
+  at: string
+}
+
+/** A ratified touchstone's standing against the manuscript as it is NOW.
+ *
+ *  A touchstone binds harder than a rule — models imitate cadence from
+ *  examples more reliably than they follow imperatives — so one that no
+ *  longer matches the book teaches a superseded voice. The anchor machinery
+ *  locks already use answers whether it still holds, so staleness is a
+ *  computed state rather than a note a human has to remember to write. */
+export interface TouchstoneState {
+  quality: string
+  scene: string
+  state: 'resolved' | 'drifted' | 'orphaned' | 'no-scene'
+  note?: string
 }
 
 export interface StyleResponse {
   author: StyleLayerPayload | null
   story: StyleLayerPayload | null
   proposed: ProposedRule[]
+  proposedTouchstones: ProposedTouchstone[]
+  /** Ratified touchstones with machine anchors, resolved against the prose. */
+  touchstones: TouchstoneState[]
 }
 
 /** Locks (settled prose): anchored refusals, resolved like annotations.
@@ -179,7 +220,14 @@ export interface DeleteLockRequest { id: string }
 
 /** Ratify a proposed rule into a layer, or dismiss it. Deterministic on the
  *  server — no model runs in this path. */
-export interface RatifyRuleRequest { id: string; action: 'ratify' | 'dismiss'; layer?: 'author' | 'story' }
+export interface RatifyRuleRequest {
+  id: string
+  action: 'ratify' | 'dismiss'
+  layer?: 'author' | 'story'
+  /** Absent means rule. Touchstones only ever ratify into the story layer —
+   *  they are calibration passages from THIS manuscript. */
+  kind?: 'rule' | 'touchstone'
+}
 export interface RatifyRuleResponse {
   ok: true
   action: 'ratify' | 'dismiss'
