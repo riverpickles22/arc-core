@@ -1,0 +1,112 @@
+{
+  "comment": "THE sentence rule, specified once. splitSentences() in graph/sentences.ts and split_sentences() in tools/sentences.py must agree on every case here. Sentences TILE their paragraph — contiguous, gapless, trailing whitespace belonging to the sentence it follows — so joining them returns the paragraph byte for byte. That identity is why accepting one sentence cannot reflow its neighbours. THE BIAS: when unsure, do not split. An unsplit pair costs a coarser judgment; a wrong split costs half a sentence landing in the author's book. Run: npm test (graph/) and python3 tools/test_sentence_vectors.py. Sections: splits (expected sentence texts, both languages) and offsets (start/end pairs, both languages).",
+  "splits": [
+    {
+      "why": "the ordinary case — two plain sentences",
+      "paragraph": "He shipped the oars. The swell ran heavy out of the north.",
+      "sentences": ["He shipped the oars. ", "The swell ran heavy out of the north."]
+    },
+    {
+      "why": "no terminal punctuation at all — the paragraph is one sentence",
+      "paragraph": "Green rot and woodsmoke over the water",
+      "sentences": ["Green rot and woodsmoke over the water"]
+    },
+    {
+      "why": "fragments, the house style — each still a sentence",
+      "paragraph": "Green rot. Woodsmoke. Rain drying on hot stone.",
+      "sentences": ["Green rot. ", "Woodsmoke. ", "Rain drying on hot stone."]
+    },
+    {
+      "why": "an abbreviation mid-sentence does not end it",
+      "paragraph": "Mr. Reyes went down to the water. He did not look back.",
+      "sentences": ["Mr. Reyes went down to the water. ", "He did not look back."]
+    },
+    {
+      "why": "initials — three periods, no boundary",
+      "paragraph": "J. R. R. Tolkien wrote it. Then he revised it.",
+      "sentences": ["J. R. R. Tolkien wrote it. ", "Then he revised it."]
+    },
+    {
+      "why": "a year or decimal is not a boundary, but the sentence's own period is",
+      "paragraph": "The seed came ashore in 1848. It measured 3.14 centimetres.",
+      "sentences": ["The seed came ashore in 1848. ", "It measured 3.14 centimetres."]
+    },
+    {
+      "why": "an ellipsis trails off; it never terminates (deliberate under-split)",
+      "paragraph": "He waited... then the light came back. The sea turned to tin.",
+      "sentences": ["He waited... then the light came back. ", "The sea turned to tin."]
+    },
+    {
+      "why": "a unicode ellipsis behaves the same as three dots",
+      "paragraph": "He waited… then he rowed. The coast held.",
+      "sentences": ["He waited… then he rowed. ", "The coast held."]
+    },
+    {
+      "why": "an em-dash is never a terminator",
+      "paragraph": "The boat rode low — heavy with water — and he bailed. Then he slept.",
+      "sentences": ["The boat rode low — heavy with water — and he bailed. ", "Then he slept."]
+    },
+    {
+      "why": "the quotation case: the mark belongs to the quote, the speech tag continues it",
+      "paragraph": "\"Get out!\" he said. The door stood open.",
+      "sentences": ["\"Get out!\" he said. ", "The door stood open."]
+    },
+    {
+      "why": "a quotation that ends the sentence outright, capital following",
+      "paragraph": "\"Get out.\" He turned away.",
+      "sentences": ["\"Get out.\" ", "He turned away."]
+    },
+    {
+      "why": "curly quotes close a sentence exactly as straight ones do",
+      "paragraph": "“Get out,” she said. “And stay out.”",
+      "sentences": ["“Get out,” she said. ", "“And stay out.”"]
+    },
+    {
+      "why": "question and exclamation terminate",
+      "paragraph": "Where was he? Nobody knew! The tide came in.",
+      "sentences": ["Where was he? ", "Nobody knew! ", "The tide came in."]
+    },
+    {
+      "why": "no space after the period — not a boundary",
+      "paragraph": "The file was named scene.md and nothing else.",
+      "sentences": ["The file was named scene.md and nothing else."]
+    },
+    {
+      "why": "a closing paren after the terminal mark travels with its sentence",
+      "paragraph": "He left at dawn (before the others woke.) The camp stayed quiet.",
+      "sentences": ["He left at dawn (before the others woke.) ", "The camp stayed quiet."]
+    },
+    {
+      "why": "multiple spaces between sentences belong to the first — rejoin must be lossless",
+      "paragraph": "He shipped the oars.  Salt burned in the cracks.",
+      "sentences": ["He shipped the oars.  ", "Salt burned in the cracks."]
+    },
+    {
+      "why": "trailing whitespace at the end of a paragraph is kept",
+      "paragraph": "He carried nothing. ",
+      "sentences": ["He carried nothing. "]
+    },
+    {
+      "why": "an empty paragraph has no sentences",
+      "paragraph": "",
+      "sentences": []
+    },
+    {
+      "why": "etc. mid-sentence under-splits by design",
+      "paragraph": "He brought rope, tin, etc. and left the rest behind.",
+      "sentences": ["He brought rope, tin, etc. and left the rest behind."]
+    }
+  ],
+  "offsets": [
+    {
+      "why": "offsets tile the paragraph with no gaps",
+      "paragraph": "He shipped the oars. The swell ran heavy.",
+      "spans": [[0, 21], [21, 41]]
+    },
+    {
+      "why": "the quotation case, with offsets",
+      "paragraph": "\"Get out!\" he said. The door stood open.",
+      "spans": [[0, 20], [20, 40]]
+    }
+  ]
+}

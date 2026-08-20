@@ -16,6 +16,19 @@
 export type * from './api-types.ts'
 export type { Anchor, AnchorResolution, AnchorState, AnnotationLike, AnnotationStatus, ResolvedAnnotation, LockLike, ResolvedLock } from './annotations.ts'
 
+// THE sentence rule (sentences.ts, held to sentence-vectors.json in both
+// languages). Re-exported here so a consumer reaches it the way it reaches the
+// date rule: one import, one rule, no second implementation. The viewer names
+// a sentence and the backend acts on it — they must split identically.
+export { splitSentences, sentenceAt } from './sentences.ts'
+export type { Sentence } from './sentences.ts'
+
+// The LCS under every diff arc shows, and the sentence alignment built on it.
+// Shared so the viewer that names a sentence and the server that acts on it
+// align identically (diff-seq.ts).
+export { diffSeq, alignSentences, alignParagraphs, mainInsertionPoint } from './diff-seq.ts'
+export type { DiffOp, AlignedSentence, AlignedParagraph } from './diff-seq.ts'
+
 // ---- minimal structural types (consumers keep their richer ones) --------
 
 export type DateLike = string | { date?: string; era?: string; note?: string; approximate?: boolean }

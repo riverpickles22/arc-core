@@ -62,6 +62,40 @@ export interface ProseAcceptResponse {
   proposed?: number
 }
 export interface ProseDiscardRequest { file: string }
+/** Judging one paragraph of a changed scene.
+ *
+ *  Named by IDENTITY like a sentence, and for the same reason: `side` says
+ *  which version the paragraph belongs to (`main` is the before text, so a
+ *  deletion; `draft` the after text, so a rewrite or an insertion) and
+ *  `paragraph` indexes that side's own list. The server re-derives the
+ *  alignment by the shared rule and performs the merge itself.
+ *
+ *  A bare index used to be the whole request, read off the draft and applied
+ *  to main. That is only safe while both versions hold the same paragraphs in
+ *  the same order, which a draft that inserts one does not. */
+export interface ProseParagraphRequest {
+  file: string
+  side: 'main' | 'draft'
+  paragraph: number
+  /** Accept only: the commit subject. */
+  message?: string
+}
+/** Judging one sentence of a changed paragraph (A37-3).
+ *
+ *  The sentence is named by IDENTITY, never by text — `side` says which
+ *  version it belongs to (`main` is the before text, `draft` the after) and
+ *  `sentence` indexes that side's own splitSentences() list. The server
+ *  re-derives the sentence by the shared rule and performs the merge itself,
+ *  because an endpoint that accepts prose from a browser is an endpoint that
+ *  can write anything into the author's book. */
+export interface ProseSentenceRequest {
+  file: string
+  paragraph: number
+  side: 'main' | 'draft'
+  sentence: number
+  /** Accept only: the commit subject. */
+  message?: string
+}
 /** The drafting pass (/api/prose/draft-scene): generation into the working
  *  tree. The result is an ordinary draft — reviewed, accepted, or discarded
  *  through the existing draft layer; arc never ratifies its own prose. */
