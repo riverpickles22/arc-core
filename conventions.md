@@ -402,6 +402,19 @@ never orphan, and only deleting the scene breaks it.
 A `quote` therefore requires a `paragraph`. Text without the index it came
 from is neither shape, and the schema refuses it.
 
+**Two kinds, and only one of them is a task.** `kind` is absent or `note` for
+a thought the author had, which carries a `status` through its lifecycle. It
+is `keypoint` for a **margin-timeline marker** — a short statement of what a
+passage must get across, drawn as a dot down the manuscript's edge. A keypoint
+is structure, never critique, and it has no lifecycle: it exists or it does
+not. So it carries no status, and the schema refuses one, because a marker
+that acquired a status would arrive in every surface that works notes as
+tasks. `by` records who made it (`author` or `agent`); keypoints minted by a
+session are always `by: agent`, so the author reads that trail as the proposal
+it is. Keypoints are the one annotation that may be deleted outright — a
+marker is not a thought, and removing one loses no record that git does not
+hold.
+
 **The anchor is where the thought occurred, not necessarily what it is
 about.** An author may highlight one sentence and write something that
 implicates the whole book. Nothing in the record should assume the note's

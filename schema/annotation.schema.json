@@ -39,13 +39,28 @@
       "type": "string",
       "description": "The note itself, in the author's words. Never categorised by them."
     },
+    "kind": {
+      "enum": [
+        "note",
+        "keypoint"
+      ],
+      "description": "Absent or `note` is a thought with a status lifecycle. `keypoint` is a margin-timeline marker — a structural statement of what a passage must get across, never a request for change. A keypoint has no lifecycle: it exists or it does not, which is why it carries no status."
+    },
+    "by": {
+      "enum": [
+        "author",
+        "agent"
+      ],
+      "description": "Who made it. Keypoints minted by a session are always `by: agent`, so the author can read the trail as the proposal it is."
+    },
     "status": {
       "enum": [
         "open",
         "working",
         "resolved",
         "dropped"
-      ]
+      ],
+      "description": "A note's lifecycle. Required on a note; refused on a keypoint — giving a keypoint a status would put a structural marker into every surface that works notes as tasks."
     },
     "created_at": {
       "type": "string"
@@ -64,8 +79,31 @@
   "required": [
     "id",
     "anchor",
-    "body",
-    "status"
+    "body"
   ],
+  "if": {
+    "properties": {
+      "kind": {
+        "const": "keypoint"
+      }
+    },
+    "required": [
+      "kind"
+    ]
+  },
+  "then": {
+    "not": {
+      "required": [
+        "status"
+      ]
+    },
+    "description": "A keypoint carries no status. The backend never writes one, and the arc-canon skill §11 instructs sessions not to — so a keypoint that has acquired one is a marker that has drifted into being a task, which is exactly the confusion the two kinds exist to keep apart."
+  },
+  "else": {
+    "required": [
+      "status"
+    ],
+    "description": "A note is a thought, and a thought has a lifecycle."
+  },
   "additionalProperties": false
 }

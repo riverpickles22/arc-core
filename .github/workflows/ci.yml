@@ -29,6 +29,9 @@ jobs:
       - name: date vectors (python side of the shared rule)
         run: python3 tools/test_date_vectors.py
 
+      - name: sentence vectors (python side of the shared rule)
+        run: python3 tools/test_sentence_vectors.py
+
       - name: validate the worked example
         run: python3 tools/validate.py examples/example-story
 
@@ -46,6 +49,9 @@ jobs:
 
       - name: annotation scope — passage or section (negative-tested)
         run: python3 tools/test_annotation_scope.py
+
+      - name: keypoint shape — what arc instructs must validate (negative-tested)
+        run: python3 tools/test_keypoint_shape.py
 
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py
