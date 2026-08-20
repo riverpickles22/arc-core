@@ -272,6 +272,28 @@ contract and bind nothing until the author ratifies them; a machine never
 writes a binding rule, because a voice nobody chose is not a voice.
 New stories start from `templates/style.md` (§9).
 
+**The three verbs that touch prose.** Every machine pass that rewrites
+manuscript text is one of these, and the licence is the difference:
+
+| verb | scope | licence | writes |
+|---|---|---|---|
+| **rephrase** | a selection | alternatives in the author's voice, offered | never |
+| **revise** | a scene | as little as the author's notes require | the draft layer |
+| **redraft** | a scene or passage | REBUILD to the scene contract — order, images, sentence architecture all in play | the draft layer |
+
+Redraft is the licence revise deliberately lacks: revise answers annotations
+and must not exceed them, so asking it for a clean pass gets a nudge by
+design. A redraft receives the scene contract, the canon context pack, both
+style layers (ratified touchstones included), and the chapter's other
+scenes; it preserves bound events and facts, POV, tense, the anachronism
+boundary, and locked paragraphs verbatim. A passage redraft may touch only
+its named range — the surroundings survive byte-for-byte by construction.
+Only deterministic conditions refuse its write (locks, the validator,
+must_withhold items the author quoted as literals); everything a model
+merely reads about the result is argued (§11), never enforced. Whatever it
+produces lands in the draft layer for the ordinary gate — generating is
+never accepting.
+
 ## 11. The three registers of consequence
 
 Every finding any arc surface shows lives in exactly one register, and no

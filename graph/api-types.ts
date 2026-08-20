@@ -100,6 +100,12 @@ export interface ProseSentenceRequest {
  *  tree. The result is an ordinary draft — reviewed, accepted, or discarded
  *  through the existing draft layer; arc never ratifies its own prose. */
 export interface DraftSceneRequest { chapter: string; guidance?: string }
+/** The redraft pass (/api/prose/redraft): a REBUILD of existing prose, told
+ *  apart from revise (minimal, annotation-driven) and rephrase (a selection,
+ *  writes nothing). A whole scene, or an inclusive paragraph range whose
+ *  surroundings are preserved byte-for-byte by construction. The result is
+ *  an ordinary draft, reviewed through the existing gate. */
+export interface RedraftRequest { scene: string; paragraphs?: [number, number]; guidance?: string }
 export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file: string | null }
 
 /** The analysis pass (/api/prose/analyze): the loop's detect step, run
