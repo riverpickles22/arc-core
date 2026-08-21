@@ -53,5 +53,8 @@ jobs:
       - name: keypoint shape — what arc instructs must validate (negative-tested)
         run: python3 tools/test_keypoint_shape.py
 
+      - name: new-story builds a conforming story from answers (negative-tested)
+        run: python3 tools/test_new_story.py
+
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py
