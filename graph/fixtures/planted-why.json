@@ -1,0 +1,26 @@
+{
+  "story": { "slug": "why-fixture", "title": "Why", "logline": "x", "status": "material", "protagonists": ["char.carlos"], "themes": [] },
+  "timeline": { "eras": [{ "id": "era.story", "name": "Story", "span": { "start": "1950-01-01", "end": "1960-12-31" } }] },
+  "entities": {
+    "obj.photograph": { "id": "obj.photograph", "type": "object", "name": "The photograph", "status": "canon", "summary": "x" },
+    "char.carlos": {
+      "id": "char.carlos", "type": "character", "name": "Carlos", "species": "human", "status": "canon", "summary": "x",
+      "states": [{ "at": { "era": "era.story", "date": "1957" }, "possessions": ["obj.photograph"] }]
+    },
+    "char.furniture": { "id": "char.furniture", "type": "character", "name": "Nobody", "species": "human", "status": "canon", "summary": "x", "states": [{ "at": { "era": "era.story", "date": "1957" } }] }
+  },
+  "events": {
+    "event.gift": { "id": "event.gift", "type": "event", "name": "The gift", "status": "canon", "scope": "story", "at": { "era": "era.story", "date": "1952" }, "participants": [{ "entity": "char.carlos" }], "leads_to": ["event.reveal"], "on_page": true },
+    "event.reveal": { "id": "event.reveal", "type": "event", "name": "The reveal", "status": "canon", "scope": "story", "at": { "era": "era.story", "date": "1959" }, "participants": [{ "entity": "char.carlos" }], "on_page": true },
+    "event.lost-thread": { "id": "event.lost-thread", "type": "event", "name": "Never fires", "status": "canon", "scope": "story", "at": { "era": "era.story", "date": "1958" } },
+    "event.keeps": { "id": "event.keeps", "type": "event", "name": "Keeping it", "status": "canon", "scope": "story", "at": { "era": "era.story", "date": "1953" }, "participants": [{ "entity": "char.carlos" }], "where": "obj.photograph", "causes": [], "leads_to": ["event.lost-thread"], "on_page": true }
+  },
+  "relationships": [],
+  "themes": [
+    { "id": "theme.lost-childhood", "name": "The lost childhood", "carriers": ["obj.photograph"] }
+  ],
+  "chapters": [
+    { "id": "ch.02", "type": "chapter", "order": 2, "title": "Two", "status": "proposed", "span": { "start": "1952", "end": "1953" }, "events": ["event.gift", "event.keeps"], "summary": "x" },
+    { "id": "ch.12", "type": "chapter", "order": 12, "title": "Twelve", "status": "proposed", "span": { "start": "1959", "end": "1959" }, "events": ["event.reveal"], "summary": "x" }
+  ]
+}

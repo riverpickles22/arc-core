@@ -7,6 +7,6 @@
   "main": "canon-graph.ts",
   "types": "canon-graph.ts",
   "scripts": {
-    "test": "node --experimental-strip-types test-vectors.ts && node --experimental-strip-types test-sentences.ts && node --experimental-strip-types test-paragraphs.ts && node --experimental-strip-types test-prose-checks.ts && node --experimental-strip-types test-reports.ts && node --experimental-strip-types test-checks.ts && node --experimental-strip-types test-impacts.ts && node --experimental-strip-types test-annotations.ts"
+    "test": "node --experimental-strip-types test-vectors.ts && node --experimental-strip-types test-sentences.ts && node --experimental-strip-types test-paragraphs.ts && node --experimental-strip-types test-prose-checks.ts && node --experimental-strip-types test-reports.ts && node --experimental-strip-types test-checks.ts && node --experimental-strip-types test-impacts.ts && node --experimental-strip-types test-why.ts && node --experimental-strip-types test-annotations.ts"
   }
 }

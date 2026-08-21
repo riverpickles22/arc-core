@@ -381,6 +381,28 @@ export interface Obligations {
 
 export interface ImpactQuestion { about: string; question: string; register: 'asked' }
 
+/** "Why is this here?" — one element's narrative role, traced from edges the
+ *  record already holds (A44-1). Four proven answers, every row citing the
+ *  edge it stands on, and a fifth answer the others cannot give: SILENCE.
+ *  An element the record cannot place is editorial information, so each
+ *  question the walks cannot answer lands in `silences` in so many words
+ *  rather than rendering as an empty list someone might read as "fine". */
+export interface WhyHere {
+  id: string
+  register: 'proven'
+  /** First reference in reading order, or null — and null is a finding. */
+  introduced: { chapter: string; scene?: string; via: string } | null
+  /** What rests on it — the impact walk, summarized with its citations. */
+  dependents: { id: string; via: string }[]
+  /** Causality INTO the events that touch it: what plants it. */
+  setup: { from: string; via: string }[]
+  /** Causality OUT: what it plants, and whether each payoff ever fires. */
+  payoffs: { to: string; firesOnPage: boolean; via: string }[]
+  themes: { id: string; name: string }[]
+  /** The record does not say — one entry per unanswerable question. */
+  silences: string[]
+}
+
 /** The deterministic blast radius of one id — registers 'proven' (every
  *  list but questions) and 'asked' (questions), never blurred. */
 export interface ImpactReport {
@@ -488,28 +510,34 @@ export class CanonGraph {
       .filter(e => e.on_page && !chapterEvents.has(e.id))
       .map(e => e.id).sort()
 
-    // An event "reaches the page" if it, or anything downstream of it along
-    // leads_to, is on_page. A leads_to edge into a subtree that never reaches
-    // the page is a planted payoff that never fires.
-    const events = this.canon.events ?? {}
-    const reaches = new Map<string, boolean>()
-    const reachesPage = (id: string, trail: Set<string>): boolean => {
-      if (reaches.has(id)) return reaches.get(id)!
-      if (trail.has(id)) return false // cycle guard; causality check owns cycles
-      trail.add(id)
-      const e = events[id]
-      const r = !!e && (!!e.on_page || (e.leads_to ?? []).some(next => reachesPage(next, trail)))
-      reaches.set(id, r)
-      return r
-    }
+    const reachesPage = this.pageReach()
     const danglingLeadsTo: { from: string; to: string }[] = []
-    for (const e of Object.values(events)) {
+    for (const e of Object.values(this.canon.events ?? {})) {
       for (const to of e.leads_to ?? []) {
-        if (!reachesPage(to, new Set())) danglingLeadsTo.push({ from: e.id, to })
+        if (!reachesPage(to)) danglingLeadsTo.push({ from: e.id, to })
       }
     }
     danglingLeadsTo.sort((a, b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to))
     return { unreferencedEntities, onPageEventsInNoChapter, danglingLeadsTo }
+  }
+
+  /** An event "reaches the page" if it, or anything downstream of it along
+   *  leads_to, is on_page. One notion of "fires", shared by the dangling-
+   *  payoff report and the why-is-this-here trace — a payoff the report
+   *  calls dangling must be the same payoff the trace says never fires. */
+  private pageReach(): (id: string) => boolean {
+    const events = this.canon.events ?? {}
+    const reaches = new Map<string, boolean>()
+    const walk = (id: string, trail: Set<string>): boolean => {
+      if (reaches.has(id)) return reaches.get(id)!
+      if (trail.has(id)) return false // cycle guard; causality check owns cycles
+      trail.add(id)
+      const e = events[id]
+      const r = !!e && (!!e.on_page || (e.leads_to ?? []).some(next => walk(next, trail)))
+      reaches.set(id, r)
+      return r
+    }
+    return id => walk(id, new Set())
   }
 
   /** Chapters whose POV neither participated in nor witnessed any of the
@@ -1009,6 +1037,87 @@ export class CanonGraph {
       edgesOnlyInB: [...bE].filter(id => !aE.has(id)).sort(),
     }
   }
+  /** Why is this here? Four proven walks re-aimed at one selection — the
+   *  reports and the impact analysis answer these questions in bulk; this is
+   *  the same engine, per element, on demand. Silence is the fifth answer
+   *  and the point: below that bar this is a backlinks panel. */
+  whyHere(id: string, scenes: SceneBinding[] = []): WhyHere {
+    const impact = this.impacts(id, scenes)
+    const isEvent = !!this.canon.events?.[id]
+    const touching = isEvent ? [id] : impact.events.map(e => e.id)
+
+    // INTRODUCED: the first thing in reading order that binds the id or
+    // stages an event touching it. Reading order is chapter order, then
+    // scene id within the chapter — the manuscript's own order.
+    const chapterOrder = new Map((this.canon.chapters ?? []).map(c => [c.id, c.order ?? 0]))
+    const touchSet = new Set(touching)
+    type Candidate = { chapter: string; scene?: string; via: string; ord: number; sub: string }
+    const candidates: Candidate[] = []
+    for (const sc of scenes) {
+      if (!sc.chapter) continue
+      const ord = chapterOrder.get(sc.chapter)
+      if (ord === undefined) continue
+      if ((sc.facts ?? []).includes(id) || (sc.events ?? []).includes(id)) {
+        candidates.push({ chapter: sc.chapter, scene: sc.scene, via: 'bound by the scene', ord, sub: sc.scene })
+      } else {
+        const staged = (sc.events ?? []).find(e => touchSet.has(e))
+        if (staged) candidates.push({ chapter: sc.chapter, scene: sc.scene, via: `stages ${staged}`, ord, sub: sc.scene })
+      }
+    }
+    for (const ch of this.canon.chapters ?? []) {
+      const listed = (ch.events ?? []).find(e => e === id || touchSet.has(e))
+      // 'zz' sorts a chapter-level citation after any scene in the chapter: a
+      // scene that binds it is the sharper introduction.
+      if (listed) candidates.push({ chapter: ch.id, via: `lists ${listed}`, ord: ch.order ?? 0, sub: 'zz' })
+    }
+    candidates.sort((a, b) => a.ord - b.ord || a.sub.localeCompare(b.sub))
+    const introduced = candidates.length
+      ? { chapter: candidates[0].chapter, ...(candidates[0].scene ? { scene: candidates[0].scene } : {}), via: candidates[0].via }
+      : null
+
+    // DEPENDS ON IT: the impact walk, flattened to citable rows.
+    const dependents: { id: string; via: string }[] = [
+      ...impact.events.map(e => ({ id: e.id, via: e.via })),
+      ...impact.states.map(st => ({ id: st.entity, via: `state at ${st.at}: ${st.via}` })),
+      ...impact.relationships.map(r => ({ id: r, via: 'relationship endpoint' })),
+      ...impact.chapters.map(c => ({ id: c.id, via: c.via })),
+      ...impact.parts.map(p => ({ id: p, via: 'part of it' })),
+      ...impact.scenes.map(sc => ({ id: sc, via: 'scene rests on it' })),
+    ]
+
+    // SETUP / PAYOFF: causality through the touching events, payoffs carrying
+    // whether they ever fire — the SAME notion of "fires" the dangling-payoff
+    // report uses, because two answers would be two definitions of dangling.
+    const reaches = this.pageReach()
+    const evs = this.canon.events ?? {}
+    const setup: WhyHere['setup'] = []
+    const payoffs: WhyHere['payoffs'] = []
+    for (const t of touching) {
+      const e = evs[t]
+      if (!e) continue
+      for (const from of e.causes ?? []) setup.push({ from, via: `causes ${t}` })
+      for (const other of Object.values(evs)) {
+        if ((other.leads_to ?? []).includes(t)) setup.push({ from: other.id, via: `leads to ${t}` })
+      }
+      for (const to of e.leads_to ?? []) payoffs.push({ to, firesOnPage: reaches(to), via: `${t} leads to it` })
+    }
+
+    const themes = this.themes(scenes).themes
+      .filter(th => th.carriers.includes(id))
+      .map(th => ({ id: th.id, name: th.name }))
+
+    // SILENCE IS A FINDING. Each question the record cannot answer says so
+    // in words, because an empty list reads as "fine" and this is not fine —
+    // it is the orphan report's information, per element, on demand.
+    const silences: string[] = []
+    if (!introduced) silences.push('never reaches the page — no scene binds it, and no chapter stages an event that touches it')
+    if (!dependents.length) silences.push('nothing in the record depends on it')
+    if (!setup.length && !payoffs.length) silences.push('no causality runs through it — it plants nothing and nothing plants it')
+    if (!themes.length) silences.push('no theme carries it')
+
+    return { id, register: 'proven', introduced, dependents, setup, payoffs, themes, silences }
+  }
+
 }
 
 export function loadGraph(canon: CanonDoc): CanonGraph {
