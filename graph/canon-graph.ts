@@ -27,6 +27,12 @@ export type { Sentence } from './sentences.ts'
 // Shared so the viewer that names a sentence and the server that acts on it
 // align identically (diff-seq.ts).
 export { diffSeq, alignSentences, alignParagraphs, mainInsertionPoint } from './diff-seq.ts'
+
+// The mechanical prose checks — proven register, decidable by reading the
+// characters (A43). Exported like the date and sentence rules: one rule,
+// every consumer, no second implementation.
+export { proseChecks } from './prose-checks.ts'
+export type { ProseCheckFinding } from './prose-checks.ts'
 export type { DiffOp, AlignedSentence, AlignedParagraph } from './diff-seq.ts'
 
 // ---- minimal structural types (consumers keep their richer ones) --------

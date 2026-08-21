@@ -56,7 +56,13 @@ function wordBefore(text: string, i: number): string {
 }
 
 /** Does a sentence end at `i`, where text[i] is a terminal mark? */
-function terminatesAt(text: string, i: number): boolean {
+/** Is the mark at `i` a genuine terminal mark — not an ellipsis trailing
+ *  off, a decimal point, an initial, or an abbreviation? The mark-level half
+ *  of the sentence rule, exported for the checks that need the mark WITHOUT
+ *  the follower rule: a lowercase word after a terminal period is a speech
+ *  tag to the splitter and a typo to the mechanical checker, and both must
+ *  agree on what a terminal mark IS or they are two sentence rules. */
+export function isTerminalMark(text: string, i: number): boolean {
   const c = text[i]
 
   // An ellipsis trails off; it does not terminate. Under-splits by design.
@@ -73,6 +79,11 @@ function terminatesAt(text: string, i: number): boolean {
     // via the initial rule above.
     if (ABBREVIATIONS.has(word.toLowerCase().replace(/\./g, ''))) return false
   }
+  return true
+}
+
+function terminatesAt(text: string, i: number): boolean {
+  if (!isTerminalMark(text, i)) return false
 
   // Step past closing quotes and brackets: the mark may belong to a quotation.
   let j = i + 1
