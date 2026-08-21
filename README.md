@@ -98,7 +98,24 @@ should point back at `conventions.md` directly as a fallback.
 
 ## Starting a story
 
-Copy the shape of `examples/example-story` — it is deliberately small (three entities, one event, two relationships) and it validates. Read `conventions.md` before writing canon; it is short, and it is the part that makes the rest work.
+Answer a few questions and let the tool derive the rest:
+
+```sh
+python3 tools/new-story.py --into .. --spec my-answers.yaml   # or --spec - for stdin
+```
+
+It writes a story that validates, from a spec holding only story answers —
+see `templates/story-spec.example.yaml` for the shape, and use `--dry-run`
+to see every file before anything lands. (In a Claude session, just say you
+want to start a story; the interview fills the spec for you.)
+`examples/example-story` remains the copyable reference — deliberately
+small, and it validates. Read `conventions.md` before writing canon; it is
+short, and it is the part that makes the rest work.
+
+The format itself — layout, file-to-schema mapping, export shape,
+conformance — is specified in [`STORY-FORMAT.md`](STORY-FORMAT.md), written
+for an implementer who has never seen arc and needs none of it (no viewer,
+no backend, no AI) to produce a conforming story.
 
 ## The rest of arc
 

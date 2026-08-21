@@ -56,5 +56,8 @@ jobs:
       - name: new-story builds a conforming story from answers (negative-tested)
         run: python3 tools/test_new_story.py
 
+      - name: STORY-FORMAT.md's mapping table matches the validator
+        run: python3 tools/test_story_format.py
+
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py

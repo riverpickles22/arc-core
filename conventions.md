@@ -121,7 +121,39 @@ Promotion `proposed → canon` is an explicit authorial act, never a side effect
 
 ## 9. Story layout and repo boundaries
 
-A story is a self-contained directory — `canon/`, `docs/`, `research/`, `prose/`, and a `CLAUDE.md` describing its agent workflow. It may live anywhere: its own repository, a sibling checkout, or a subdirectory of arc-core (as `examples/example-story` does). Nothing in arc-core is story-specific, and nothing in a story repeats what arc-core defines.
+A story is a self-contained directory. It may live anywhere: its own
+repository, a sibling checkout, or a subdirectory of arc-core (as
+`examples/example-story` does). Nothing in arc-core is story-specific, and
+nothing in a story repeats what arc-core defines.
+
+The layout, with what is actually enforced — the distinction matters,
+because the layout is a **convention rather than a schema**: `validate.py`
+checks canon *content* against the file-to-schema mapping, never directory
+shape as such. (The interop contract for outside implementers, including
+the mapping table and export shape, is `STORY-FORMAT.md`.)
+
+```
+my-story/
+├── canon/
+│   ├── story.yaml            REQUIRED    the manifest
+│   ├── timeline.yaml         REQUIRED    eras; every timeref anchors to one
+│   ├── relationships.yaml    REQUIRED    the key may be empty, not absent
+│   ├── chapters.yaml         optional    narrative structure
+│   ├── themes.yaml           optional    themes with carriers
+│   ├── entities/             conventional  characters/ places/ factions/ objects/
+│   └── events/               conventional  wired by causality
+├── docs/                     conventional  one article per entity; style.md, vision.md
+├── prose/                    optional    the manuscript, scene frontmatter bound (§10)
+├── annotations/              optional    anchored notes and keypoints (§14)
+├── research/  material/  notes/  locks/   optional
+├── assets/  view.yaml        optional    presentation — never canon, never validated
+├── .arc/                     machine state — gitignored, disposable
+└── CLAUDE.md                 conventional  the story's agent workflow
+```
+
+The three REQUIRED files are read unconditionally by `export-canon.py`; the
+validator refuses their absence up front rather than letting an app fail on
+them later.
 
 A story also carries its **style contract** — `docs/style.md`, the author's
 voice written down (§10) — started from `templates/style.md`.
@@ -154,7 +186,14 @@ python3 tools/validate.py     ../my-story
 python3 tools/export-canon.py ../my-story
 ```
 
-New stories copy `templates/` and the shape of `examples/example-story`. They never fork the schema — a story that needs a schema change needs it in arc-core, for everyone.
+New stories come from `tools/new-story.py`, which derives everything
+technical from a spec of the author's answers and self-validates before
+anything lands (`templates/` and `examples/example-story` remain the shapes
+it emits and the copyable reference). A story's `.claude/settings.json` is
+generated per-story by `hooks/install-hooks.mjs` and is never copied between
+stories — it hardcodes one machine's absolute paths. Stories never fork the
+schema — a story that needs a schema change needs it in arc-core, for
+everyone.
 
 ## 10. Prose and scenes (the binding)
 
