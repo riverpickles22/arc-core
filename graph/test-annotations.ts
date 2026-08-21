@@ -112,5 +112,53 @@ const afterRewrite = resolveAnnotations(
 expect(orphanedAnnotations(afterRewrite).length === 0,
   'a scene note is never reported as an orphan, whatever happens to the prose')
 
+// ---- locks learn how much they cover (A40-1) ----------------------------
+
+const { resolveLocks, lockViolations, lockScope } = await import('./annotations.ts')
+
+// 11. the three coherent shapes, and every blend rejected
+expect(lockScope({ scene: 'sc.01-1', paragraph: 2, quote: 'x' }) === 'paragraph', "today's shape is a paragraph lock")
+expect(lockScope({ scene: 'sc.01-1' }) === 'scene', 'a scene alone is a section lock')
+expect(lockScope({ chapter: 'ch.01' }) === 'chapter', 'a chapter alone is a chapter lock')
+expect(lockScope({ chapter: 'ch.01', paragraph: 2 }) === 'invalid', 'a chapter anchor naming a paragraph is incoherent')
+expect(lockScope({ chapter: 'ch.01', scene: 'sc.01-1' }) === 'invalid', 'or naming a scene')
+expect(lockScope({ scene: 'sc.01-1', quote: 'x' }) === 'invalid', 'a quote without its paragraph is neither shape')
+
+const [invalid] = resolveLocks([{ id: 'lock.bad', anchor: { chapter: 'ch.01', paragraph: 2 } }], () => 'Body.')
+expect(invalid.scope === 'invalid' && /incoherent/.test(invalid.resolution.note ?? ''),
+  'an incoherent lock is rejected with the reason, and enforces nothing')
+expect(lockViolations('Body.', 'Changed.', [invalid]).length === 0, 'rejected means it blocks nothing')
+
+// 12. a section lock refuses ANY change to its scene — including growth —
+//     and survives a total rewrite unreported
+const [section] = resolveLocks([{ id: 'lock.sec', anchor: { scene: 'sc.01-1' } }], () => 'One.\n\nTwo.')
+expect(section.scope === 'scene' && section.resolution.state === 'resolved', 'a section lock resolves against any body')
+expect(lockViolations('One.\n\nTwo.', 'One.\n\nTwo.', [section]).length === 0, 'an unchanged scene is fine')
+expect(lockViolations('One.\n\nTwo.', 'One.\n\nTwo.\n\nThree.', [section]).length === 1, 'growth is a change — settled means settled')
+const grew = lockViolations('One.\n\nTwo.', 'Entirely new.', [section])[0]
+expect(grew.paragraph === null, 'a scope violation has no paragraph number to point at')
+
+const [rewritten] = resolveLocks([{ id: 'lock.sec', anchor: { scene: 'sc.01-1' } }], () => 'Every word replaced, twice.')
+expect(rewritten.resolution.state === 'resolved', 'never drifted or orphaned, whatever the prose becomes')
+const [gone] = resolveLocks([{ id: 'lock.sec', anchor: { scene: 'sc.99-9' } }], () => null)
+expect(gone.resolution.state === 'no-scene', 'only deleting the scene reaches it')
+
+// 13. a chapter lock resolves standing; the caller supplies its scenes
+const [chapterLock] = resolveLocks([{ id: 'lock.ch', anchor: { chapter: 'ch.01' } }], () => null)
+expect(chapterLock.scope === 'chapter' && chapterLock.resolution.state === 'resolved',
+  'a chapter lock stands without a scene body — membership is the caller\'s knowledge')
+expect(lockViolations('A scene of the chapter.', 'That scene, changed.', [chapterLock]).length === 1,
+  'and refuses any change to any body the caller holds it against')
+
+// 14. a paragraph lock is exactly what it was before scopes existed
+const [para] = resolveLocks(
+  [{ id: 'lock.p', anchor: { scene: 'sc.01-1', paragraph: 1, quote: 'Two.' } }],
+  () => 'One.\n\nTwo.\n\nThree.')
+expect(para.scope === 'paragraph' && para.resolution.state === 'resolved' && para.resolution.paragraph === 1,
+  'the existing shape resolves exactly as it always did')
+expect(lockViolations('One.\n\nTwo.\n\nThree.', 'One.\n\nTwo, changed.\n\nThree.', [para]).length === 1)
+expect(lockViolations('One.\n\nTwo.\n\nThree.', 'One, changed.\n\nTwo.\n\nThree.', [para]).length === 0,
+  'and still fences its paragraph alone')
+
 if (failures) { console.error(`annotation anchors: ${failures} failure(s)`); process.exit(1) }
 console.log('annotation anchors: notes follow their quote, orphan honestly, never relocate on a guess, and a scene note holds')
