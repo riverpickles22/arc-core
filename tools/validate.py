@@ -451,6 +451,36 @@ def main():
                 if ref not in defined and ref not in material_items and not ref.startswith("sc."):
                     flag(f, f"annotation {item.get('id')}: link does not resolve: {ref}")
 
+    # --- pass 3.95: locks — settled prose (A40-5). The records that decide
+    # whether the author's settled prose can be overwritten were the one kind
+    # of committed story state nothing checked. Same shape as the annotation
+    # pass: schema per file, then the references the schema cannot see.
+    locks_dir = story_dir / "locks"
+    if locks_dir.is_dir():
+        lock_ids = set()
+        lock_files = sorted(locks_dir.glob("*.yaml"))
+        for f in lock_files:
+            item = load_yaml(f) or {}
+            if use_schema and "lock" in schemas:
+                validator = jsonschema.Draft202012Validator(schemas["lock"], registry=registry)
+                for err in validator.iter_errors(item):
+                    flag(f, f"lock: {'/'.join(str(p) for p in err.path)}: {err.message[:200]}")
+            if isinstance(item.get("id"), str):
+                lock_ids.add(item["id"])
+        for f in lock_files:
+            item = load_yaml(f) or {}
+            anchor = item.get("anchor") or {}
+            scene = anchor.get("scene")
+            if scene and scene not in scene_ids:
+                flag(f, f"lock {item.get('id')}: anchor names unknown scene: {scene}")
+            parent = item.get("absorbed_by")
+            # An absorbed_by naming a missing lock is a WARNING, not an error:
+            # the runtime treats it as no absorption at all (the lock enforces
+            # again), so the story still behaves — but the dangling link is
+            # worth telling the author about.
+            if parent and parent not in lock_ids:
+                warn(f, f"lock {item.get('id')}: absorbed_by names no existing lock ({parent}) — it enforces again")
+
     # --- pass 4: research citations
     if src_file.exists():
         for f in sorted((research_dir / "topics").glob("*.md")):

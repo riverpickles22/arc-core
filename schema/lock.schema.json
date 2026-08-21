@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arc.dev/schema/lock.schema.json",
+  "title": "arc lock \u2014 settled prose, refused to every write path",
+  "description": "A lock says: this prose is settled \u2014 work around it. It anchors in one of exactly three shapes (a paragraph with its quote, a scene alone, a chapter alone; A40-1), and may carry an absorption link to the wider lock doing its work (A40-2). These records decide whether the author's settled prose can be overwritten, which is why they are the one kind of committed story state that must not go unchecked.",
+  "type": "object",
+  "required": [
+    "id",
+    "anchor"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^lock\\.[a-z0-9][a-z0-9-]*$"
+    },
+    "anchor": {
+      "description": "One of three shapes, never a blend \u2014 a chapter anchor naming a paragraph claims two sizes at once, and enforcing either half would be enforcing a guess.",
+      "oneOf": [
+        {
+          "type": "object",
+          "description": "a paragraph lock \u2014 the original shape; the quote is the durable anchor",
+          "required": [
+            "scene",
+            "paragraph",
+            "quote"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "scene": {
+              "type": "string",
+              "pattern": "^sc\\.[a-z0-9-]+$"
+            },
+            "paragraph": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "quote": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "a section lock \u2014 the scene entire, settled; no quote, so it can never drift or orphan",
+          "required": [
+            "scene"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "scene": {
+              "type": "string",
+              "pattern": "^sc\\.[a-z0-9-]+$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "a chapter lock \u2014 every scene whose frontmatter names this chapter",
+          "required": [
+            "chapter"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "chapter": {
+              "type": "string",
+              "pattern": "^ch\\.[a-z0-9-]+$"
+            }
+          }
+        }
+      ]
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "absorbed_by": {
+      "type": "string",
+      "pattern": "^lock\\.[a-z0-9][a-z0-9-]*$",
+      "description": "the wider lock doing this one's work; while it exists this lock enforces nothing and renders nowhere, and lifting it restores this record exactly"
+    }
+  }
+}

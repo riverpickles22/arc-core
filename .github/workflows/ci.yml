@@ -59,5 +59,8 @@ jobs:
       - name: STORY-FORMAT.md's mapping table matches the validator
         run: python3 tools/test_story_format.py
 
+      - name: lock shape — three anchors, every blend refused (negative-tested)
+        run: python3 tools/test_lock_shape.py
+
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py
