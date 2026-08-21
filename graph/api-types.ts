@@ -221,7 +221,9 @@ export interface StyleResponse {
 /** Locks (settled prose): anchored refusals, resolved like annotations.
  *  The write path enforces them; the wire only reports and edits them. */
 export interface LocksResponse { locks: import('./annotations.ts').ResolvedLock[] }
-export interface CreateLockRequest { scene: string; paragraph: number; quote: string }
+/** One of three shapes (A40-1): a paragraph with its quote, a scene alone
+ *  (a section lock), or a chapter alone. A blend is refused. */
+export interface CreateLockRequest { scene?: string; chapter?: string; paragraph?: number; quote?: string }
 export interface DeleteLockRequest { id: string }
 
 /** Ratify a proposed rule into a layer, or dismiss it. Deterministic on the

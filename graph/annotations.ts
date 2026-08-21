@@ -172,6 +172,13 @@ export interface LockLike {
   id: string
   anchor: LockAnchor
   created_at?: string
+  /** The wider lock doing this one's work (A40-2). An absorbed lock enforces
+   *  nothing and renders nowhere while its parent stands — but the record
+   *  survives untouched, and lifting the parent restores it exactly as it
+   *  was. Deletion was rejected: a paragraph lock is a decision the author
+   *  made about a specific passage, and trading six of those for one broader
+   *  one would leave them silently unlocked when the broad one lifts. */
+  absorbed_by?: string
 }
 
 export type LockScope = 'paragraph' | 'scene' | 'chapter' | 'invalid'
