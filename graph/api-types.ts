@@ -112,6 +112,23 @@ export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file
  *  BEFORE the author accepts. Read-only — it proposes nothing and writes
  *  nothing. Its briefing is wholly `argued` (conventions §11): claims with
  *  citations, for a human to judge, never presented as proven. */
+/** The mechanical prose checks (/api/prose/checks): the PROVEN channel over
+ *  the manuscript. No engine, no tokens, no judgment — decidable by reading
+ *  the characters, same answer every run. A finding inside locked prose
+ *  carries the lock's id and nothing anywhere offers a repair: settled
+ *  prose stays settled even against a typo — report it, never repair it. */
+export interface ProseCheckHit {
+  scene: string
+  file: string
+  check: string
+  paragraph: number
+  excerpt: string
+  register: 'proven'
+  /** the lock covering this paragraph, when one does */
+  lock?: string
+}
+export interface ProseChecksResponse { findings: ProseCheckHit[] }
+
 export interface AnalyzeResponse {
   briefing: string
   register: Extract<Register, 'argued'>
