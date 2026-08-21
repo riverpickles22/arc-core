@@ -371,7 +371,7 @@ export interface ReviseResponse {
  *  construction — no lens holds write capability — so everything here is
  *  `argued` (conventions §11) and nothing it says changes the story. */
 export interface LensFinding {
-  lens: 'character' | 'style' | 'historical' | 'continuity'
+  lens: 'character' | 'style' | 'historical' | 'continuity' | 'grammar'
   about: string
   claim: string
   evidence: string
