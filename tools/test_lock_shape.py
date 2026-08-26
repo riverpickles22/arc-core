@@ -55,7 +55,10 @@ def story_with(tmp: Path, name: str, *locks: dict) -> Path:
     ld = story / "locks"
     ld.mkdir(exist_ok=True)
     for i, lock in enumerate(locks):
-        (ld / f"lock-{i:03d}.yaml").write_text(json.dumps(lock))   # JSON is valid YAML
+        # JSON is valid YAML; the chapter placeholder binds to the chapter the
+        # scene actually declares, because a chapter lock now must name one.
+        (ld / f"lock-{i:03d}.yaml").write_text(
+            json.dumps(lock).replace("ch.01-the-arrival", chapter_id))
     return story
 
 
@@ -72,7 +75,7 @@ def main() -> int:
         r = run(story_with(tmp, "coherent",
             {"id": "lock.001", "anchor": {"scene": "sc.01-1", "paragraph": 0, "quote": "The lamp had been lit for an hour."}, "absorbed_by": "lock.002"},
             {"id": "lock.002", "anchor": {"scene": "sc.01-1"}},
-            {"id": "lock.003", "anchor": {"chapter": "ch.01-the-arrival"}}))   # any ch.* id; locks do not bind chapters to canon yet
+            {"id": "lock.003", "anchor": {"chapter": "ch.01-the-arrival"}}))   # rebound by story_with to the scene's declared chapter
         expect(r.returncode == 0, f"the three shapes and a real absorption must validate:\n{r.stdout}{r.stderr}")
 
         # Every blend refused.

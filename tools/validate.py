@@ -373,6 +373,11 @@ def main():
     # --- pass 3.5: prose — scene frontmatter binding (conventions §10)
     prose_dir = story_dir / "prose"
     scene_ids = set()
+    # Bodies and chapter membership, kept for the lock pass: a paragraph
+    # lock's quote must still appear in its scene, and a chapter lock only
+    # means something for a chapter some scene actually declares.
+    scene_bodies = {}
+    prose_chapters = set()
     if prose_dir.is_dir():
         for f in sorted(prose_dir.rglob("*.md")):
             text = f.read_text()
@@ -390,6 +395,9 @@ def main():
             if sid in scene_ids:
                 flag(f, f"duplicate scene id {sid}")
             scene_ids.add(sid)
+            scene_bodies[sid] = text[fm.end():]
+            if meta.get("chapter"):
+                prose_chapters.add(meta["chapter"])
             contract = meta.get("contract") or {}
             contract_wants = contract.get("wants") or {}
             for ref in [meta.get("chapter"), meta.get("pov"),
@@ -473,7 +481,25 @@ def main():
             scene = anchor.get("scene")
             if scene and scene not in scene_ids:
                 flag(f, f"lock {item.get('id')}: anchor names unknown scene: {scene}")
+            chapter = anchor.get("chapter")
+            if chapter and chapter not in prose_chapters:
+                flag(f, f"lock {item.get('id')}: anchor names a chapter no scene declares: {chapter}")
+            # The quote is the durable anchor, and "orphaned" is the
+            # resolver's word for overwritten: an active paragraph lock whose
+            # quote no longer appears in its scene means settled prose was
+            # rewritten behind the author's back — a working tree that must
+            # not pass the gate. Absorption mirrors the runtime exactly: a
+            # lock absorbed by an EXISTING lock enforces nothing; scene and
+            # chapter locks carry no quote by design, so there is nothing
+            # here to check for them — their baselines live in git.
             parent = item.get("absorbed_by")
+            absorbed = parent in lock_ids
+            quote = anchor.get("quote")
+            if quote and not absorbed and scene in scene_bodies:
+                norm = lambda t: " ".join(t.split())
+                if norm(quote) not in norm(scene_bodies[scene]):
+                    flag(f, f"lock {item.get('id')}: quote no longer appears in {scene} — "
+                            "settled prose has been overwritten (orphaned); restore it from this lock's quote")
             # An absorbed_by naming a missing lock is a WARNING, not an error:
             # the runtime treats it as no absorption at all (the lock enforces
             # again), so the story still behaves — but the dangling link is
