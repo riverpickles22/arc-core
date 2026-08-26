@@ -68,5 +68,8 @@ jobs:
       - name: commit gate — git refuses to ratify an edit to locked prose
         run: python3 tools/test_commit_gate.py
 
+      - name: lock guard — the agent's pen refused before the tool runs
+        run: node hooks/test-lock-guard.mjs
+
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py

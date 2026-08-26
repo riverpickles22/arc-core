@@ -26,6 +26,17 @@ const EVENTS = ['SessionStart', 'UserPromptSubmit', 'PostToolUse', 'Stop', 'Sess
 
 const commandFor = event => `ARC_PORT=${PORT} node ${JSON.stringify(HOOK)} ${event}`
 
+/** The lock guard is a different animal from arc-hook: it REFUSES (exit 2 on
+ *  an edit to settled prose) where arc-hook only reports, so it is its own
+ *  script, installed under a PreToolUse matcher for exactly the two tools
+ *  that write files. It lives beside arc-hook.mjs in the same checkout. */
+const GUARD = process.env.ARC_GUARD ?? path.join(path.dirname(HOOK), 'lock-guard.mjs')
+const GUARD_MATCHER = 'Edit|Write'
+const guardCommand = `node ${JSON.stringify(GUARD)}`
+const isLockGuard = entry =>
+  typeof entry?.command === 'string' &&
+  (entry.command.includes('lock-guard.mjs') || entry.command.includes(GUARD))
+
 /** Ours is recognisable by the script it runs, so a moved checkout is an
  *  update rather than a duplicate. */
 const isArcHook = entry =>
@@ -64,6 +75,29 @@ for (const event of EVENTS) {
   }
   if (!found) {
     groups.push({ hooks: [want] })
+    changed = true
+  }
+}
+
+// The guard, merged under the same recognise-and-update rule.
+{
+  const groups = (settings.hooks.PreToolUse ??= [])
+  let found = false
+  for (const group of groups) {
+    const hooks = group?.hooks
+    if (!Array.isArray(hooks)) continue
+    const ix = hooks.findIndex(isLockGuard)
+    if (ix >= 0) {
+      found = true
+      if (hooks[ix].command !== guardCommand) {
+        hooks[ix] = { type: 'command', command: guardCommand }
+        changed = true
+      }
+      if (group.matcher !== GUARD_MATCHER) { group.matcher = GUARD_MATCHER; changed = true }
+    }
+  }
+  if (!found) {
+    groups.push({ matcher: GUARD_MATCHER, hooks: [{ type: 'command', command: guardCommand }] })
     changed = true
   }
 }

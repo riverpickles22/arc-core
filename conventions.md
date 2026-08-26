@@ -191,7 +191,11 @@ technical from a spec of the author's answers and self-validates before
 anything lands (`templates/` and `examples/example-story` remain the shapes
 it emits and the copyable reference). A story's `.claude/settings.json` is
 generated per-story by `hooks/install-hooks.mjs` and is never copied between
-stories — it hardcodes one machine's absolute paths. Stories never fork the
+stories — it hardcodes one machine's absolute paths. It installs arc-hook.mjs
+(report-never-act, every event) and `hooks/lock-guard.mjs` (PreToolUse,
+Edit|Write only — the ONE hook that refuses: an edit that would rewrite
+locked prose exits 2 before the tool runs; everything else, including
+anything malformed, fails open). Stories never fork the
 schema — a story that needs a schema change needs it in arc-core, for
 everyone.
 
