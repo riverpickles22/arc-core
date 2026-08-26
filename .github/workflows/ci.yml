@@ -62,5 +62,11 @@ jobs:
       - name: lock shape — three anchors, every blend refused (negative-tested)
         run: python3 tools/test_lock_shape.py
 
+      - name: lock gate — the validator goes red on overwritten settled prose
+        run: python3 tools/test_lock_gate.py
+
+      - name: commit gate — git refuses to ratify an edit to locked prose
+        run: python3 tools/test_commit_gate.py
+
       - name: the obligation satisfaction chain (negative-tested)
         run: python3 tools/test_obligations.py

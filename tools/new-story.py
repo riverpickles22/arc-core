@@ -343,6 +343,9 @@ def emit(spec: dict) -> dict[str, str | tuple[str, int]]:
         "CLAUDE.md": from_template("CLAUDE.md", title),
         # Executable: the story's own gate, pointing at the shared validator.
         "bin/validate": ((TEMPLATES / "bin-validate.sh").read_text(), 0o755),
+        # The commit gate: git refuses to ratify an edit to locked prose.
+        # bin/validate wires core.hooksPath to bin/hooks on its first run.
+        "bin/hooks/pre-commit": ((TEMPLATES / "bin-hooks-pre-commit.sh").read_text(), 0o755),
     }
     if place_id:
         files[f"canon/entities/places/{place_slug}.yaml"] = render_place(spec, place_id)

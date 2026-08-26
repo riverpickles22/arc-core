@@ -25,4 +25,17 @@ if [ ! -x "$python" ]; then
 	exit 2
 fi
 
+# Zero-step commit gate: the first run of the validator wires git to the
+# repo's committed hooks (bin/hooks/pre-commit — the lock gate), so nobody
+# has to know an install incantation. Idempotent, and it never overrides a
+# hooksPath the author set themselves — it warns instead.
+if [ -d "$story_root/.git" ] && [ -f "$story_root/bin/hooks/pre-commit" ]; then
+	hooks_path=$(git -C "$story_root" config --local --get core.hooksPath 2>/dev/null || true)
+	if [ -z "$hooks_path" ]; then
+		git -C "$story_root" config core.hooksPath bin/hooks
+	elif [ "$hooks_path" != "bin/hooks" ]; then
+		echo "validate: core.hooksPath is '$hooks_path', not bin/hooks — the lock commit gate is NOT installed" >&2
+	fi
+fi
+
 exec "$python" "$arc_core/tools/validate.py" "$story_root" "$@"
