@@ -18,6 +18,10 @@ anchor:
   scene: sc.01-1
   paragraph: 4
   quote: the paragraph's own text
+  # A49-1: the covered paragraphs' verbatim text, captured at creation —
+  # the note's own record of what it was talking about.
+  paragraphs:
+    - the whole paragraph as it stood when the note was made
 body: what this passage must get across
 kind: keypoint
 by: agent

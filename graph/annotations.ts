@@ -35,6 +35,13 @@ export interface Anchor {
   /** the selected text, verbatim — the durable fallback. Meaningless without
    *  a paragraph, and the schema refuses that combination. */
   quote?: string
+  /** the verbatim text of each covered paragraph, captured when the note was
+   *  made — the note's own record of what it was talking about, because
+   *  paragraphs change over time (A49-1). One entry for a plain passage
+   *  note; several, in order, when the quote spans further. Display and
+   *  learning context, never a resolution key: resolution follows the
+   *  quote, and this field records rather than resolves. */
+  paragraphs?: string[]
 }
 
 /** Is this anchor about the section rather than a sentence in it? */

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "annotation.schema.json",
   "title": "Manuscript annotation",
-  "description": "A thought the author had while reading a specific passage (conventions \u00a714). Anchored to prose, not to canon. Distinct from material: material is an idea that may enter the story; an annotation is a reaction to what is already on the page.",
+  "description": "A thought the author had while reading a specific passage (conventions §14). Anchored to prose, not to canon. Distinct from material: material is an idea that may enter the story; an annotation is a reaction to what is already on the page.",
   "type": "object",
   "properties": {
     "id": {
@@ -11,7 +11,7 @@
     },
     "anchor": {
       "type": "object",
-      "description": "What the note is about. A passage note carries scene, paragraph and quote \u2014 resolved in that order of durability. A scene note carries the scene alone: it is about the section rather than a sentence in it, which is the only shape an observation about something ABSENT can take, since absent text cannot be quoted. A scene note can never drift and never orphan; only deleting the scene breaks it.",
+      "description": "What the note is about. A passage note carries scene, paragraph and quote — resolved in that order of durability. A scene note carries the scene alone: it is about the section rather than a sentence in it, which is the only shape an observation about something ABSENT can take, since absent text cannot be quoted. A scene note can never drift and never orphan; only deleting the scene breaks it.",
       "properties": {
         "scene": {
           "type": "string",
@@ -24,14 +24,28 @@
         },
         "quote": {
           "type": "string",
-          "description": "The selected text, verbatim \u2014 the durable fallback when indices shift. Requires a paragraph: a quote with no index is an incoherent anchor, not a scene note."
+          "description": "The selected text, verbatim — the durable fallback when indices shift. Requires a paragraph: a quote with no index is an incoherent anchor, not a scene note."
+        },
+        "paragraphs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "minItems": 1,
+          "description": "The verbatim text of each paragraph the note covers, captured when the note was made — the note's own record of what it was talking about, because paragraphs change over time. One entry for a plain passage note; several, in order, when the quote spans further. Display and learning context, never a resolution key: resolution still follows the quote. Requires a paragraph for the same reason a quote does — a scene note's referent is the scene, which needs no snapshot."
         }
       },
       "required": [
         "scene"
       ],
       "dependentRequired": {
-        "quote": ["paragraph"]
+        "quote": [
+          "paragraph"
+        ],
+        "paragraphs": [
+          "paragraph"
+        ]
       },
       "additionalProperties": false
     },
@@ -70,7 +84,7 @@
       "items": {
         "type": "string"
       },
-      "description": "What this note became when its scope outgrew the passage \u2014 material, obligation, or canon ids."
+      "description": "What this note became when its scope outgrew the passage — material, obligation, or canon ids."
     },
     "note": {
       "type": "string"
