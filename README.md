@@ -130,6 +130,16 @@ Licensed under the [Apache License 2.0](LICENSE) — the code, the schemas and
 `conventions.md` are free to use, modify and distribute, with an explicit
 patent grant.
 
+That is the whole of the format, and it stays Apache 2.0: anyone may write a
+tool that reads, writes and checks an arc story, and sell it. The two
+application repos, [arc-backend](https://github.com/riverpickles22/arc-backend)
+and [arc-frontend](https://github.com/riverpickles22/arc-frontend), are one
+implementation of this spec and are source-available under
+FSL-1.1-Apache-2.0 instead — free to use and change, not free to resell as a
+competing product, and Apache 2.0 two years after each release. The line sits
+here because the checks are the format's proof: a format nobody can verify is
+not a standard.
+
 **The code is licensed; the name is not.** Apache 2.0 §6 says so directly:
 
 > This License does not grant permission to use the trade names, trademarks,
@@ -146,6 +156,6 @@ prose you write stay entirely yours, under whatever terms you choose.
 
 ## Contributing
 
-Patches welcome, under Apache 2.0 with a [DCO](https://developercertificate.org/)
-sign-off — `git commit -s`, no CLA, no paperwork. See
-[CONTRIBUTING.md](CONTRIBUTING.md).
+Patches welcome — under Apache 2.0 here, under FSL-1.1-Apache-2.0 in the two
+application repos — with a [DCO](https://developercertificate.org/) sign-off:
+`git commit -s`, no CLA, no paperwork. See [CONTRIBUTING.md](CONTRIBUTING.md).

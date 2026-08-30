@@ -3,18 +3,25 @@
 Patches are welcome — on the engine. arc-core is the part worth
 standardizing on: `conventions.md`, the schemas, the validator, the graph
 module. `arc-backend` and `arc-frontend` are one implementation of that
-spec, and take contributions on the same terms.
+spec, and take contributions under their own license — see below.
 
 ## The license your patch lands under
 
-Everything here is [Apache 2.0](LICENSE), and so is anything you send.
-Apache 2.0 §5 already says so — a contribution intentionally submitted for
-inclusion is under the terms of the License unless you explicitly say
-otherwise — so there is no separate agreement to sign and no CLA.
+It depends on the repo. Everything in arc-core is [Apache 2.0](LICENSE), and
+so is anything you send here. Apache 2.0 §5 already says so — a contribution
+intentionally submitted for inclusion is under the terms of the License unless
+you explicitly say otherwise — so there is no separate agreement to sign and
+no CLA. Patches to `arc-backend` and `arc-frontend` land under those repos'
+license, FSL-1.1-Apache-2.0, on the same basis: what you send is accepted
+under the terms the repo is offered under, and nothing else.
 
 **No CLA, deliberately.** A CLA exists to keep the option of relicensing
-contributed code under different terms later. arc is not planning that, and
-the barrier would fall on exactly the person this project wants: the second
+contributed code under different terms later. arc will not do that to a
+contributor's code. The one relicensing in its history — the two application
+repos moving from Apache 2.0 to FSL in August 2026, while the format stayed
+Apache — happened when every commit was the author's own, so no contributor's
+work changed terms under them. A CLA's barrier would fall on exactly the
+person this project wants: the second
 author who reads `conventions.md`, disagrees with something in it, and sends
 a patch. Signing paperwork to fix a schema is the wrong first experience.
 
@@ -42,6 +49,14 @@ Origin](https://developercertificate.org/) 1.1, reproduced in full below.
 It is the light-weight mechanism the Linux kernel and git use: no account,
 no signature, no third-party service — one flag, and a record that travels
 with the commit.
+
+One honest wrinkle. The DCO speaks of "the open source license indicated in
+the file". In arc-core that is exactly right. In `arc-backend` and
+`arc-frontend` the license indicated is the FSL, which is source-available
+rather than open source in the OSI sense; read the certificate there as
+referring to the license in that repo's LICENSE file. The wording that makes
+that unambiguous is being settled with counsel, and the standard DCO text
+itself is not being altered — it is reproduced below exactly as published.
 
 ```
 Developer's Certificate of Origin 1.1
