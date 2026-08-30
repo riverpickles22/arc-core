@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ARC_PORT=8787 node \"/Users/charlesharnage/workspace/arc/arc-core/hooks/arc-hook.mjs\" SessionStart"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ARC_PORT=8787 node \"/Users/charlesharnage/workspace/arc/arc-core/hooks/arc-hook.mjs\" UserPromptSubmit"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ARC_PORT=8787 node \"/Users/charlesharnage/workspace/arc/arc-core/hooks/arc-hook.mjs\" PostToolUse"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ARC_PORT=8787 node \"/Users/charlesharnage/workspace/arc/arc-core/hooks/arc-hook.mjs\" Stop"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "ARC_PORT=8787 node \"/Users/charlesharnage/workspace/arc/arc-core/hooks/arc-hook.mjs\" SessionEnd"
+          }
+        ]
+      }
+    ]
+  }
+}

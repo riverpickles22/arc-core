@@ -108,6 +108,46 @@ export interface DraftSceneRequest { chapter: string; guidance?: string }
 export interface RedraftRequest { scene: string; paragraphs?: [number, number]; guidance?: string }
 export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file: string | null }
 
+/** The reroute pass (/api/prose/reroute): another way to the same destination.
+ *  The scene contract and the author's key points are the destination; the
+ *  current prose is withheld from the prompt and only its known route — the
+ *  order of author-marked beats, what it opens and closes on, its locks — is
+ *  fenced. Alternatives land beside the manuscript, never in it: adopt is the
+ *  lock-gated scene write, and only then does the ledger learn of the route. */
+export interface RerouteRequest { scene: string; count?: number; guidance?: string }
+/** One required beat and where the pass claims it lands — argued, from the
+ *  answer's own tail; `paragraph` is 1-based, null when the pass did not say. */
+export interface RouteCoverage { item: string; paragraph: number | null }
+export interface RouteAlternative {
+  id: string
+  scene: string
+  seed: string
+  guidance?: string
+  /** sha256 prefix of the scene body this route diverged from */
+  based_on: string
+  created_at: string
+  body: string
+  /** the argued briefing, coverage tail removed */
+  briefing: string
+  /** null when the answer carried no readable tail — shown as "not reported" */
+  coverage: RouteCoverage[] | null
+  /** share of counted paragraphs with a ≥60%-survival counterpart in the
+   *  current scene; null when too few paragraphs were countable to judge */
+  overlap: number | null
+  /** present when the first answer was refused and this is the retry — the
+   *  refusal, verbatim, so the author can see what the gate caught */
+  retried?: string
+}
+export interface RerouteRefusal { seed: string; reason: string }
+export interface RerouteResponse { alternatives: RouteAlternative[]; refused: RerouteRefusal[] }
+/** A lock that will constrain a reroute of this scene: verbatim and in order
+ *  for a paragraph lock; a whole-scene or chapter lock refuses the run. */
+export interface RouteLockNotice { id: string; scope: 'paragraph' | 'scene' | 'chapter'; paragraph: number | null }
+export interface RouteListResponse { scene: string; alternatives: RouteAlternative[]; locks: RouteLockNotice[] }
+export interface AdoptRouteRequest { scene: string; alt: string }
+export interface AdoptRouteResponse { scene: ProseScene; file: string }
+export interface DropRouteRequest { scene: string; alt: string }
+
 /** The analysis pass (/api/prose/analyze): the loop's detect step, run
  *  BEFORE the author accepts. Read-only — it proposes nothing and writes
  *  nothing. Its briefing is wholly `argued` (conventions §11): claims with
