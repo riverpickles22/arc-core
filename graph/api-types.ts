@@ -48,6 +48,39 @@ export interface ProseDraft {
   history: { hash: string; date: string; subject: string }[]
 }
 
+/** The re-entry briefing (/api/briefing): where the author left off, what is
+ *  in flight, what is due — assembled from the record, never generated.
+ *  Every field is proven: a paragraph read back from a commit, a count over
+ *  a store, an obligation whose window the chapter order places. */
+export interface BriefingResponse {
+  /** false when the story is not a git repository: no accept history exists */
+  git: boolean
+  /** WHERE YOU LEFT OFF — the scene the last accept touched (latest in
+   *  reading order when one accept took several), its final paragraph
+   *  verbatim as committed, and when. null until a scene has been accepted. */
+  lastAccepted: {
+    scene: string; chapter: string; file: string
+    paragraph: string
+    /** the accept commit's author date, ISO 8601 */
+    acceptedAt: string
+    hash: string
+  } | null
+  /** WHAT'S IN FLIGHT — the draft layer, open notes, routes waiting, and
+   *  material still unplaced. Counts are the arrays' lengths. */
+  draft: { file: string; scene: string | null; status: 'added' | 'modified' | 'deleted' }[]
+  notes: { id: string; scene: string; body: string }[]
+  /** routes waiting per scene — chain heads, the same count the cap uses */
+  routes: Record<string, number>
+  unplaced: number
+  /** WHAT'S DUE — unmet obligations whose window touches the chapter of the
+   *  last accepted scene. Empty when nothing has been accepted yet; null
+   *  when the canon could not be read, because an unknown count is not zero. */
+  due: { id: string; body: string; klass: 'unowned' | 'unwritten' | 'overdue'; window: { from?: string; to?: string } }[] | null
+  /** the last session's prose commits, newest first — a session being a run
+   *  of accepts closer together than SESSION_GAP_HOURS */
+  lastSession: { hash: string; date: string; subject: string }[]
+}
+
 // ---- request/response envelopes -----------------------------------------
 
 export interface DocsResponse { articles: DocArticle[] }
