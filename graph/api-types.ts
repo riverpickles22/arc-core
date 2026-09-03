@@ -115,6 +115,11 @@ export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file
  *  fenced. Alternatives land beside the manuscript, never in it: adopt is the
  *  lock-gated scene write, and only then does the ledger learn of the route. */
 export interface RerouteRequest { scene: string; count?: number; guidance?: string }
+/** Rewrite one alternative under the author's note; the result is a new
+ *  version of the same route (`revises` names the parent). */
+export interface ReviseRouteRequest { scene: string; alt: string; note?: string }
+export interface AddRouteNoteRequest { scene: string; alt: string; body: string; paragraph?: number | null }
+export interface DeleteRouteNoteRequest { scene: string; alt: string; note: string }
 /** One required beat and where the pass claims it lands — argued, from the
  *  answer's own tail; `paragraph` is 1-based, null when the pass did not say. */
 export interface RouteCoverage { item: string; paragraph: number | null }
@@ -137,6 +142,23 @@ export interface RouteAlternative {
   /** present when the first answer was refused and this is the retry — the
    *  refusal, verbatim, so the author can see what the gate caught */
   retried?: string
+  /** the alternative this one rewrites — versions of a route form a chain;
+   *  absent on a first-generation route */
+  revises?: string
+  /** the author's reactions to this route. Proposal-side, like the route
+   *  itself: they live with it and go when it goes. */
+  notes?: RouteNote[]
+}
+
+/** A reaction to a route, anchored to one of its paragraphs or to the whole
+ *  of it. No drift resolution: a route's body never changes in place — a
+ *  rewrite writes a new version — so the index stays true. */
+export interface RouteNote {
+  id: string
+  /** 1-based paragraph of the route, or null for the route as a whole */
+  paragraph: number | null
+  body: string
+  created_at: string
 }
 export interface RerouteRefusal { seed: string; reason: string }
 export interface RerouteResponse { alternatives: RouteAlternative[]; refused: RerouteRefusal[] }
