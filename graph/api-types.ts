@@ -40,6 +40,14 @@ export interface ProseChange {
   file: string
   status: 'added' | 'modified' | 'deleted'
   main: ProseScene | null
+  /** Which pass wrote the pending text — 'draft', 'revise', 'redraft',
+   *  'reroute' — read from the generation ledger. Absent when the author
+   *  typed it, or when what arc wrote has already been accepted. */
+  origin?: string
+  /** The note ids the pending text was written to answer. Provenance from
+   *  the ledger, never a model's reading: a note is listed here because the
+   *  pass was handed it, not because anyone judged it answered. */
+  answers?: string[]
 }
 
 export interface ProseDraft {
@@ -139,6 +147,32 @@ export interface DraftSceneRequest { chapter: string; guidance?: string }
  *  surroundings are preserved byte-for-byte by construction. The result is
  *  an ordinary draft, reviewed through the existing gate. */
 export interface RedraftRequest { scene: string; paragraphs?: [number, number]; guidance?: string }
+
+/** "Work through my notes on this scene" (/api/prose/work-notes): the
+ *  scene's open notes are the brief, no ceremony. `revise` is the minimal
+ *  revision with the notes as instructions; `redraft` is the clean pass with
+ *  the notes answered where the rebuild allows. A scene with no open notes
+ *  is refused (409) rather than run on nothing. */
+export type WorkNotesMode = 'revise' | 'redraft'
+export interface WorkNotesRequest { scene: string; mode?: WorkNotesMode; guidance?: string }
+export interface WorkNotesResponse {
+  scene: string
+  mode: WorkNotesMode
+  /** The note ids handed to the pass, in rail order. */
+  notes: string[]
+  file: string | null
+  /** false when nothing was written: a conflict between notes, a refusal,
+   *  or a pass that changed nothing. */
+  changed: boolean
+  /** Notes that pull against each other, surfaced BEFORE anything is
+   *  written (revise mode); the author decides which wins. */
+  conflicts: NoteConflict[]
+  /** One short paragraph in the author's language: what happened, where to
+   *  look. Never the prose. */
+  reply: string
+  /** The run that carries the receipt, when one was opened. */
+  run: string | null
+}
 export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file: string | null }
 
 /** The reroute pass (/api/prose/reroute): another way to the same destination.

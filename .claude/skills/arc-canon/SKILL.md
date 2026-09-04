@@ -220,6 +220,13 @@ retry that works around the gate. The **briefing is argued** — the pass's
 own claims about checklist, must_establish, motifs, leakage — and you relay
 it to the author as claims to judge, never as verdicts.
 
+**Answer in one line, and send the author to arc.** The draft is beside
+the scene in the manuscript, and that is where it is read — with the
+contract, the locks, the notes, and the accept gate around it. Do not paste
+the prose into the terminal; do not summarise it. Say what landed and
+where: *"Redrafted sc.00-2 into a draft beside the scene. Open arc to
+review it."* If the pass refused, say what refused and the next action.
+
 ## 10. Working the author's notes
 
 The author reads the manuscript and leaves **annotations** — thoughts
@@ -233,6 +240,43 @@ structural statement, not a request for change. **Skip keypoints entirely
 when working notes**: they have no status, they never drive a revision (the
 fan-out excludes them and so must you), and "resolving" one is a category
 error.
+
+**The notes are the brief, and arc works them — you call arc's pass, never
+your own.** When the author names a scene — *"work through my notes on
+scene 2"*, *"take my notes into the prologue's second scene"* — the
+operation is `work-notes`, scene-scoped, and the register follows the
+author's words:
+
+- *work through / take in / apply my notes* → the **minimal revision**: the
+  notes are instructions and the prose changes as little as they require.
+- *a clean pass with my notes*, *rebuild it around my notes* → the
+  **clean pass** (§9's redraft) with the notes answered where the rebuild
+  allows; `--guidance` adds one binding line beside them.
+
+```bash
+# with nothing running (the same operation the viewer runs):
+cd <arc-backend> && ARC_STORY_PATH=<story> npm run notes -- sc.00-2
+npm run notes -- sc.00-2 --rebuild --guidance "keep the first half"
+
+# when the backend is up:
+curl -s -X POST localhost:8787/api/prose/work-notes \
+  -H 'content-type: application/json' \
+  -d '{"scene":"sc.00-2","mode":"revise"}'
+```
+
+arc gathers the scene's open notes itself — whole-scene and passage notes,
+never key points — refuses a scene with none (409: leave a note first) or a
+settled one (423: unlock it in arc), checks the notes for conflicts before
+writing, and records on the draft which notes it was handed, so the
+manuscript can say *answered in the draft* beside each. **Answer in one
+line and send the author to arc** (§9): *"Worked 2 notes on sc.00-2 into a
+draft beside the scene. Open arc to review it."* The notes stay open; the
+author closes them.
+
+Only when the author asks for something the pass cannot resolve alone —
+notes across several scenes, a note whose scope outgrew its passage, a
+conflict arc surfaced — do the steps below apply, and even then the writing
+lands as a draft through the same gate.
 
 Read every note whose `status` is `open`, with its anchor: the scene, the
 paragraph, and the quoted text. Then, before changing anything:
