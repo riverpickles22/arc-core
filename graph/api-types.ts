@@ -93,7 +93,10 @@ export interface BriefingResponse {
 
 export interface DocsResponse { articles: DocArticle[] }
 export interface ProseResponse { scenes: ProseScene[] }
-export interface ProseAcceptRequest { message?: string; capture?: boolean }
+/** `files` scopes the accept to particular scenes, so the decision can live
+ *  at the scene it is about rather than in a list of everything pending
+ *  (A64-3). Absent, every pending scene is ratified, as it always was. */
+export interface ProseAcceptRequest { message?: string; capture?: boolean; files?: string[] }
 export interface ProseAcceptResponse {
   hash: string
   files: string[]
@@ -258,6 +261,9 @@ export interface ProseCheckHit {
 }
 export interface ProseChecksResponse { findings: ProseCheckHit[] }
 
+/** `files` scopes the reading to particular scenes, so it can stand beside
+ *  the decision it informs (A64-4). Absent, the whole pending draft is read. */
+export interface AnalyzeRequest { files?: string[] }
 export interface AnalyzeResponse {
   briefing: string
   register: Extract<Register, 'argued'>
