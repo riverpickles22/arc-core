@@ -220,6 +220,15 @@ retry that works around the gate. The **briefing is argued** — the pass's
 own claims about checklist, must_establish, motifs, leakage — and you relay
 it to the author as claims to judge, never as verdicts.
 
+**Your report NEVER goes in the file.** A scene holds the author's prose
+and its frontmatter, and nothing else — no summary of what you changed, no
+note about locks or git, no "two things for you" below a `---` rule. The
+manuscript renders whatever the file says, so a report written there arrives
+in the author's novel as prose, with accept and reject buttons on it. arc
+refuses the write: the validator errors on a bare `---` in a scene body, and
+the accept gate and the story's pre-commit hook run the validator. Say it in
+the terminal instead.
+
 **Answer in one line, and send the author to arc.** The draft is beside
 the scene in the manuscript, and that is where it is read — with the
 contract, the locks, the notes, and the accept gate around it. Do not paste

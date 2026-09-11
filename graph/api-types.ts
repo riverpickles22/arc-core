@@ -100,6 +100,10 @@ export interface ProseAcceptRequest { message?: string; capture?: boolean; files
 export interface ProseAcceptResponse {
   hash: string
   files: string[]
+  /** Notes the accepted change was written to answer, closed by this accept
+   *  (A63-4). From the ledger — the pass was handed them — never a judgement
+   *  that they were met. */
+  notesResolved?: string[]
   capture?: ChatResponse
   /** How many style rules the learning pass argued for at this accept, when
    *  it argued for any. The rules themselves live in the queue, not here. */

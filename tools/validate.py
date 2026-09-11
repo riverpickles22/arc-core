@@ -395,7 +395,24 @@ def main():
             if sid in scene_ids:
                 flag(f, f"duplicate scene id {sid}")
             scene_ids.add(sid)
-            scene_bodies[sid] = text[fm.end():]
+            body = text[fm.end():]
+            scene_bodies[sid] = body
+            # A scene is the author's prose and its frontmatter, and nothing
+            # else. A bare `---` after the frontmatter is either a second
+            # frontmatter block or — the case that put this here — an agent's
+            # report appended below the words, which the manuscript then
+            # renders as prose because the file says it is. Narrow and
+            # decidable: the rule alone on its own line, never an em-rule,
+            # never `***`, never a line inside a fenced block.
+            fenced = False
+            for n, line in enumerate(body.split("\n"), start=fm.group(0).count("\n") + 1):
+                if line.lstrip().startswith("```"):
+                    fenced = not fenced
+                elif not fenced and line.strip() == "---":
+                    flag(f, f"line {n}: a scene holds the prose and its frontmatter, nothing else — "
+                            "this rule starts something that is not the book. If a pass wrote its "
+                            "report here, the report belongs in the terminal and the prose stays")
+                    break
             if meta.get("chapter"):
                 prose_chapters.add(meta["chapter"])
             contract = meta.get("contract") or {}
