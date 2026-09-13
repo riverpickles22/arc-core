@@ -2,3 +2,11 @@
 __pycache__/
 *.pyc
 .DS_Store
+
+# A story's hooks file is generated per machine: dev.sh installs arc's hooks
+# into <story>/.claude/settings.json with absolute paths to this checkout, so
+# it is machine-specific output and never part of the format. The example
+# story is a story like any other, and gets one when it is run.
+examples/*/.claude/settings.json
+examples/*/.claude/settings.local.json
+.claude/settings.local.json

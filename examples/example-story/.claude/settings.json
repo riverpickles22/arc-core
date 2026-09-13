@@ -49,6 +49,17 @@
           }
         ]
       }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"/Users/charlesharnage/workspace/arc/arc-core/hooks/lock-guard.mjs\""
+          }
+        ]
+      }
     ]
   }
 }
