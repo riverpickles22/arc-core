@@ -695,12 +695,12 @@ export interface AttentionResponse {
   orphanedAnnotations: { id: string; body: string; scene: string; quote?: string; why: string }[]
 }
 
-// ---- the chat contract (/api/chat) --------------------------------------
+// ---- what a tool-using pass reports back --------------------------------
+//  There is no chat route: Claude Code with the arc-canon skill is the chat
+//  (A54). These two shapes stay because the passes that write through the
+//  story tools — capture, draft-scene, the material worker — report in them.
 
-export interface ChatMessage { role: 'user' | 'assistant'; content: string }
-export interface ChatRequest { messages: ChatMessage[] }
-
-/** One tool invocation the agent made during a turn. */
+/** One tool invocation a pass made during a turn. */
 export interface ChatAction { tool: string; path: string; ok: boolean; detail?: string }
 
 export interface ChatResponse { reply: string; actions: ChatAction[]; canonChanged: boolean }

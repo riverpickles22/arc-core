@@ -39,6 +39,12 @@ examples/example-story/  A small, valid, complete story to copy from
 .claude/skills/arc-canon/  A Claude Code skill for working canon from the terminal
 ```
 
+A story's own `.claude/settings.json` is not in that list and is not in this
+repo. It is generated per machine: `dev.sh` installs arc's hooks into it with
+absolute paths to wherever this checkout lives, so it is output, not format.
+The example story gets one the first time it is run, and `.gitignore` keeps it
+out of the tree.
+
 ## Setup
 
 ```sh
@@ -85,9 +91,10 @@ Validator rules get a **negative test** proving each failure mode fails
 `conventions.md`, locate a story, query the graph, write through the
 validator — as a Claude Code skill, so a terminal session can read and
 reshape canon without `arc-frontend` or `arc-backend` running. It holds
-itself to the same rules as `arc-backend`'s embedded chat agent (new facts
-land as `status: proposed` unless the author ratifies them); the two are
-peers, not a UI path and a lesser one.
+itself to the same rules as any other writer of canon — new facts land as
+`status: proposed` unless the author ratifies them — and it is the way to
+talk to a story: the backend serves the record and runs the passes, and
+there is no chat panel or chat route anywhere in arc.
 
 The skill lives here because it's story-agnostic, same as everything else in
 this repo. It's discovered when a Claude Code session's working tree includes
@@ -119,7 +126,7 @@ no backend, no AI) to produce a conforming story.
 
 ## The rest of arc
 
-- **arc-backend** — canon API and the embedded world-shaping agent.
+- **arc-backend** — the canon API, the writing passes, and the draft layer.
 - **arc-frontend** — the living map/graph/timeline viewer.
 
 Both are optional. Canon plus these tools is a complete, useful system on its own.

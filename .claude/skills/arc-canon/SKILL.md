@@ -1,15 +1,16 @@
 ---
 name: arc-canon
-description: Read and reshape an arc story's canon graph — characters, places, factions, objects, events, timeline, relationships — directly as YAML from Claude Code, under the same rules arc-backend's embedded chat agent follows. Use whenever the user wants to query story state (who/where/what at a given time, what's proposed vs ratified), mint or update canon, or otherwise work the story graph from the terminal instead of the arc-frontend viewer.
+description: Read and reshape an arc story's canon graph — characters, places, factions, objects, events, timeline, relationships — directly as YAML from Claude Code, under the same rules arc-backend's own story tools follow. Use whenever the user wants to query story state (who/where/what at a given time, what's proposed vs ratified), mint or update canon, or otherwise work the story graph from the terminal instead of the arc-frontend viewer.
 ---
 
 # arc-canon
 
 arc stories keep their material — not their prose, the *world* — as versioned
 YAML canon: entities with time-ordered state snapshots, events wired by
-causality, objective relationships, a timeline of eras. `arc-backend`'s chat
-agent and `arc-frontend`'s viewer are one way to work with that graph. This
-skill makes Claude Code a peer of that agent: same files, same rules, same
+causality, objective relationships, a timeline of eras. `arc-frontend`'s
+viewer reads that graph and `arc-backend`'s passes write to it. This skill is
+how it is *talked* to: arc has no chat of its own, so a Claude Code session
+holds itself to what the passes hold to — same files, same rules, same
 validator. Nothing here needs either app running.
 
 ## 1. Locate the story and arc-core
@@ -38,9 +39,10 @@ it.
 
 ## 3. Rules
 
-These are the same rules `arc-backend/src/agent.ts` holds itself to — hold
-yourself to the same ones so an edit from Claude Code is indistinguishable
-from one made through the viewer's chat panel:
+These are the same rules `arc-backend/src/agent.ts` holds its story tools
+to — hold yourself to the same ones, because this session is the only way to
+talk to a story: there is no chat panel and no chat route, and an edit made
+here must be indistinguishable from one a pass makes:
 
 - Canon YAML is the source of truth. Docs elaborate; canon states facts.
   Prose must never contradict a `status: canon` fact.
@@ -117,8 +119,8 @@ An unanchored reference is timeless — just read the record's file.
 ```
 
 Exit 0 = clean, non-zero = findings — fix and re-run before treating the
-change as done. This is the same gate the chat agent's writes bounce off;
-going through Claude Code instead doesn't relax it.
+change as done. This is the same gate arc's own passes bounce off; coming
+through Claude Code instead doesn't relax it.
 
 ## 7. Seeing the result
 
