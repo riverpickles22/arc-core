@@ -17,5 +17,5 @@ repo shares. This file is only what is particular to the constitution.
   symlinked to `~/.claude/skills` by `../dev.sh`; they hold protocol, never
   story content.
 - Checks before you say done: `.venv/bin/python tools/validate.py examples/example-story`
-  · `.venv/bin/python tools/test_*.py` · `cd graph && npm test` (the venv `../dev.sh`
+  · `for t in tools/test_*.py; do .venv/bin/python $t; done` (one file per run — Python treats the rest of a glob as arguments and runs only the first) · `cd graph && npm test` (the venv `../dev.sh`
   makes — the system `python3` has no PyYAML). Commit with `-s` (DCO).
