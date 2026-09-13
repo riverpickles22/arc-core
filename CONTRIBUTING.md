@@ -99,8 +99,7 @@ Canon changes and schema changes both have to survive the validator, because
 that is the promise the whole system rests on:
 
 ```sh
-python3 tools/validate.py examples/example-story     # schemas + canon discipline
-cd graph && npm test                                 # the graph module's vectors
+tools/check.sh    # validates the example, every tools/test_*.py, the lock guard, the graph vectors
 ```
 
 A change to `conventions.md` is a change to the constitution — say in the
