@@ -16,5 +16,6 @@ repo shares. This file is only what is particular to the constitution.
 - **Skills are the terminal path.** `arc-canon` and `arc-new-story` are
   symlinked to `~/.claude/skills` by `../dev.sh`; they hold protocol, never
   story content.
-- Checks before you say done: `python3 tools/validate.py examples/example-story`
-  · `python3 tools/test_*.py` · `cd graph && npm test`. Commit with `-s` (DCO).
+- Checks before you say done: `.venv/bin/python tools/validate.py examples/example-story`
+  · `.venv/bin/python tools/test_*.py` · `cd graph && npm test` (the venv `../dev.sh`
+  makes — the system `python3` has no PyYAML). Commit with `-s` (DCO).
