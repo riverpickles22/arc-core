@@ -84,7 +84,9 @@ def backend_specimen() -> dict:
 
 def story_with(tmp: Path, name: str, annotation: dict) -> Path:
     story = tmp / name
-    shutil.copytree(EXAMPLE, story)
+    # The example ships one scene with notes and a lock (A67-9); this test
+    # writes its own sc.01-1, so it copies the canon and leaves those behind.
+    shutil.copytree(EXAMPLE, story, ignore=shutil.ignore_patterns(".claude", "prose", "annotations", "locks"))
     chapters = (story / "canon" / "chapters.yaml").read_text()
     scene_id = "ch.01-the-arrival"
     if scene_id not in chapters:

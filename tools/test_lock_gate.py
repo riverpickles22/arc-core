@@ -46,7 +46,9 @@ def expect(cond: bool, msg: str) -> None:
 
 def story_with(tmp: Path, name: str, scene_body: str, *locks: dict) -> Path:
     story = tmp / name
-    shutil.copytree(EXAMPLE, story, ignore=shutil.ignore_patterns(".claude"))
+    # The example ships one scene with notes and a lock (A67-9); this test
+    # writes its own sc.01-1, so it copies the canon and leaves those behind.
+    shutil.copytree(EXAMPLE, story, ignore=shutil.ignore_patterns(".claude", "prose", "annotations", "locks"))
     chapters = (story / "canon" / "chapters.yaml").read_text()
     first = [ln for ln in chapters.splitlines() if ln.strip().startswith("- id:")]
     chapter_id = first[0].split("- id:")[1].strip() if first else "ch.01"

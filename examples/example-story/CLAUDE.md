@@ -33,10 +33,17 @@ Run after any canon change:
 
 ## Current state of this story
 
-- Milestone: **material** (no prose). This is arc's worked example, not a
-  novel anyone is writing — deliberately small (three entities, one event,
+- Milestone: **material**, with one scene. This is arc's worked example, not
+  a novel anyone is writing — deliberately small (three entities, one event,
   one relationship) so the tools and a new story's copy-from shape both have
   something real and valid to point at.
+- `prose/ch-01/scene-01.md` is the one scene, and it exists for arc's own
+  tests: arc-backend's fixture engine runs the route passes against it, so it
+  carries a contract with a quoted withhold, author-marked key points
+  (`annotations/`), a locked paragraph (`locks/`) and an author note that
+  quotes the prose. Its wording is load-bearing — every fixture brief is
+  fingerprinted over it — so a change here is a fixture change there
+  (`arc-backend/fixtures/`, `npm run fixtures:rekey`).
 - Everything in `canon/` is `status: canon`; there is nothing pending
   ratification. If you're using this story to test the `proposed` workflow,
   that's expected to be temporary — revert before committing.

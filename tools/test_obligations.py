@@ -21,7 +21,9 @@ PY = sys.executable
 
 def story(tmp, name):
     d = tmp / name
-    shutil.copytree(EXAMPLE, d)
+    # The example ships one scene with notes and a lock (A67-9); this test
+    # writes its own sc.01-1, so it copies the canon and leaves those behind.
+    shutil.copytree(EXAMPLE, d, ignore=shutil.ignore_patterns(".claude", "prose", "annotations", "locks"))
     (d / "material").mkdir(exist_ok=True)
     return d
 

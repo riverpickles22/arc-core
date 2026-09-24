@@ -543,8 +543,9 @@ def main():
         sys.exit(1)
     n_entities = len(docs_of)
     n_events = sum(1 for i in defined if i.startswith('event.'))
+    scenes = f"{len(scene_ids)} scene{'' if len(scene_ids) == 1 else 's'}, " if scene_ids else ""
     print(f"OK — {len(canon_files)} canon files, {n_entities} entities, "
-          f"{n_events} events, {len(defined)} IDs, all checks passed")
+          f"{n_events} events, {len(defined)} IDs, {scenes}all checks passed")
 
 
 if __name__ == "__main__":

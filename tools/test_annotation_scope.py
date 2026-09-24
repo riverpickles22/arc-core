@@ -33,7 +33,9 @@ She went down to the rocks anyway, because that was the hour she went.
 
 def story_with_annotation(tmp: Path, name: str, anchor: dict) -> Path:
     story = tmp / name
-    shutil.copytree(EXAMPLE, story)
+    # The example ships one scene with notes and a lock (A67-9); this test
+    # writes its own sc.01-1, so it copies the canon and leaves those behind.
+    shutil.copytree(EXAMPLE, story, ignore=shutil.ignore_patterns(".claude", "prose", "annotations", "locks"))
     chapters = story / "canon" / "chapters.yaml"
     text = chapters.read_text()
     scene_id = "ch.01-the-arrival"

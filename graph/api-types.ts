@@ -87,6 +87,9 @@ export interface BriefingResponse {
   /** the last session's prose commits, newest first — a session being a run
    *  of accepts closer together than SESSION_GAP_HOURS */
   lastSession: { hash: string; date: string; subject: string }[]
+  /** runs that DID NOT FINISH — found on disk with no ending, as a backend
+   *  killed mid-run leaves them (A67-3); each deletable by id */
+  unfinished: { id: string; prompt: string; started_at: string }[]
 }
 
 // ---- request/response envelopes -----------------------------------------
@@ -188,16 +191,38 @@ export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file
  *  order of author-marked beats, what it opens and closes on, its locks — is
  *  fenced. Alternatives land beside the manuscript, never in it: adopt is the
  *  lock-gated scene write, and only then does the ledger learn of the route. */
-export interface RerouteRequest { scene: string; count?: number; guidance?: string }
+/** `dry` runs the slice and the brief and never spawns: the response carries
+ *  the rendered briefs, one per seed, and no route (A67-2). */
+export interface RerouteRequest {
+  scene: string
+  count?: number
+  guidance?: string
+  dry?: boolean
+  /** a depth word the author used — *quickly*, *thoroughly*. A word the
+   *  rows do not carry is refused, never mapped to standard (A67-8). */
+  depth?: string
+}
 /** Rewrite one alternative under the author's note; the result is a new
  *  version of the same route (`revises` names the parent). */
-export interface ReviseRouteRequest { scene: string; alt: string; note?: string }
+export interface ReviseRouteRequest { scene: string; alt: string; note?: string; depth?: string }
 export interface AddRouteNoteRequest { scene: string; alt: string; body: string; paragraph?: number | null }
 export interface DeleteRouteNoteRequest { scene: string; alt: string; note: string }
 /** One required beat and where the pass claims it lands — argued, from the
  *  answer's own tail; `paragraph` is 1-based, null when the pass did not say. */
 export interface RouteCoverage { item: string; paragraph: number | null }
+/** A claim the pass made whose evidence did not resolve against the
+ *  destination it was given, counted by reason (A67-8; §4, "Evidence
+ *  resolution"). Shown where the route is, so the author can tell a route
+ *  that reached its beats from one that talked about others. */
+export interface DroppedClaim {
+  reason: 'unresolvable' | 'outside the slice' | 'unparseable'
+  count: number
+}
 export interface RouteAlternative {
+  /** The run's receipt, as the author reads it (A67-11) — absent for a route
+   *  written by an older arc, which has no run and therefore no receipt. */
+  receipt?: RouteReceipt | null
+
   id: string
   scene: string
   seed: string
@@ -208,8 +233,30 @@ export interface RouteAlternative {
   body: string
   /** the argued briefing, coverage tail removed */
   briefing: string
+  /** the run that produced it — its receipt is `.arc/runs/<run>/receipt.yaml`
+   *  while the route waits, and `history/<run>.yaml` once the author adopts
+   *  it (A67-4). Absent on a route written by an older arc. */
+  run?: string
+  /** the fingerprints of everything the pass read to write it (invariant 1;
+   *  A67-10). Compared at the write path: a changed fingerprint makes the
+   *  route stale. Absent on a route written by an older arc. */
+  reads?: { id: string; version: string }[]
+  /** filled by the backend when the route is listed, never stored: what has
+   *  changed under it since it was written, and whether it can still be
+   *  read as a governed route at all. */
+  stale?: {
+    /** the ids whose fingerprints moved — empty when the route is stale
+     *  only because it predates the governed path */
+    changed: string[]
+    /** how to say it: a route written by an older arc is not the same thing
+     *  as one whose scene moved */
+    why: 'the record moved' | 'written by an older arc'
+  }
   /** null when the answer carried no readable tail — shown as "not reported" */
   coverage: RouteCoverage[] | null
+  /** claims that named a beat the destination did not hold, by reason —
+   *  dropped rather than shown beside the required ones (A67-8) */
+  dropped?: DroppedClaim[]
   /** share of counted paragraphs with a ≥60%-survival counterpart in the
    *  current scene; null when too few paragraphs were countable to judge */
   overlap: number | null
@@ -234,12 +281,83 @@ export interface RouteNote {
   body: string
   created_at: string
 }
-export interface RerouteRefusal { seed: string; reason: string }
-export interface RerouteResponse { alternatives: RouteAlternative[]; refused: RerouteRefusal[] }
+/** One gate, as the author reads it: what it measured and against what bar.
+ *  Proven, always — a gate is code, and nothing here is a model's reading. */
+export interface RouteGateReading {
+  /** arc's id for the gate — for a key, never for a label */
+  gate: string
+  /** what it checks, in the author's words: a gate id is arc's vocabulary and
+   *  does not belong on a page beside the prose */
+  says: string
+  verdict: 'held' | 'refused' | 'could not judge' | 'not applicable'
+  bar?: number | string | null
+  measured?: number | string | null
+  attempt: number
+}
+
+/** THE RECEIPT, AS THE AUTHOR READS IT (A67-11). The working receipt holds
+ *  fingerprints, session ids, transcript paths and a git revision; none of
+ *  that belongs on a page beside the prose, so this is a projection of it and
+ *  not the thing itself. What survives the projection: what the pass was
+ *  given, the three separate readings of what it was not, the gates, how it
+ *  ended, and the request in the author's own words.
+ *
+ *  The three readings are kept apart on purpose: "arc chose not to show it"
+ *  and "arc ran out of room" are different facts about the same absence, and
+ *  a page that merges them tells the author neither. */
+export interface RouteReceipt {
+  /** the run that made the route */
+  run: string
+  /** the gesture the author made, and the cell it resolved to */
+  request?: { gesture: string; cell: string; subject?: string }
+  /** the layers the brief carried, by id — never a line of its text */
+  given: string[]
+  /** withheld BY DESIGN: the row does not show this pass these things */
+  withheld_by_design: string[]
+  /** dropped for room, in the row's drop order */
+  dropped_for_budget: string[]
+  /** what the runtime added on its own, observed rather than declared */
+  runtime_added: string[]
+  gates: RouteGateReading[]
+  /** how the run ended, from the closed set */
+  ending?: RunEnding
+  /** one sentence for a run that did not land, rendered by code from the
+   *  gate record and ending in the keystroke that comes next; null when it
+   *  landed. Never phrased by a model. */
+  outcome: string | null
+  /** the engine and model as THEY reported, never as arc assumed */
+  engine?: { engine: string; model: string | null; runtime: string | null }
+  wall_clock_ms?: number
+  started_at: string
+  decided_at: string
+}
+
+export interface RerouteRefusal {
+  seed: string
+  /** why, as the gate runner reported it — arc's words, kept for the fold */
+  reason: string
+  /** the same thing in one sentence rendered by code, ending in the next
+   *  keystroke: what the author reads (A67-11, criterion 4). */
+  outcome?: string
+  /** the run it was, so its receipt can be read and it can be stopped */
+  run?: string
+}
+export interface RerouteResponse {
+  alternatives: RouteAlternative[]
+  refused: RerouteRefusal[]
+  /** the run this request was — stoppable at /api/runs/:id/stop while it works (A67-3) */
+  run?: string
+  /** the rendered briefs, on a dry run only */
+  briefs?: string[]
+}
 /** A lock that will constrain a reroute of this scene: verbatim and in order
  *  for a paragraph lock; a whole-scene or chapter lock refuses the run. */
 export interface RouteLockNotice { id: string; scope: 'paragraph' | 'scene' | 'chapter'; paragraph: number | null }
 export interface RouteListResponse { scene: string; alternatives: RouteAlternative[]; locks: RouteLockNotice[] }
+/** Per scene: how many routes still wait on the author, and how many of
+ *  the four places are taken. A stale route waits but holds no place
+ *  (A67-10), so the two differ and the viewer needs both. */
+export interface RouteCountsResponse { counts: Record<string, { waiting: number; governed: number }> }
 export interface AdoptRouteRequest { scene: string; alt: string }
 export interface AdoptRouteResponse { scene: ProseScene; file: string }
 export interface DropRouteRequest { scene: string; alt: string }
@@ -271,7 +389,7 @@ export interface AnalyzeRequest { files?: string[] }
 export interface AnalyzeResponse {
   briefing: string
   register: Extract<Register, 'argued'>
-  engine: 'sdk' | 'claude-cli'
+  engine: 'sdk' | 'claude-cli' | 'fixture'
   files: string[]
 }
 /** Selection suggestions (/api/prose/suggest): rephrase against the style
@@ -289,7 +407,7 @@ export interface SuggestRequest {
 export interface SuggestResponse {
   suggestions: string[]
   register: Extract<Register, 'argued'>
-  engine: 'sdk' | 'claude-cli'
+  engine: 'sdk' | 'claude-cli' | 'fixture'
 }
 
 /** The style contract (/api/style, conventions §10): the author's voice in
@@ -433,7 +551,7 @@ export interface HealthResponse {
   /** Which generation engine is live, or null when none is configured. The
    *  viewer needs this to explain an unavailable box rather than let the
    *  author type into a dead one. */
-  engine: 'sdk' | 'claude-cli' | null
+  engine: 'sdk' | 'claude-cli' | 'fixture' | null
 }
 
 // ---- story material (/api/material) --------------------------------------
@@ -581,13 +699,26 @@ export interface HookResponse { ok: true; ignored?: true; run?: string }
  *  the hook that opens one is synchronous with a 30-second budget while intake
  *  alone measures ~9s, so the run carries what they said and the structured
  *  reading fills in later. */
+/** A run's state, from the closed set (agent-workflows §4, "The run"), each
+ *  with an author-facing word: queued · paused · running · waiting for you ·
+ *  refused · failed · cancelled · done. The last four are over. */
+export type RunState = 'queued' | 'paused' | 'running' | 'waiting for you' | 'refused' | 'failed' | 'cancelled' | 'done'
+/** How a run ended, from the closed set (invariant 9): the receipt's
+ *  ending. `unfinished` is what a run killed with the backend reads as. */
+export type RunEnding = 'landed' | 'refused' | 'could not run' | 'timed out' | 'budget' | 'unreadable' | 'cancelled' | 'unfinished'
+
 export interface RunSummary {
   id: string
   source: 'ui' | 'claude-code' | 'cli' | 'external'
+  /** the run in the author's words — never the prompt text */
   prompt: string
   started_at: string
-  /** `awaiting` means it is the author's move. */
-  state: 'working' | 'awaiting' | 'closed'
+  /** `waiting for you` means it is the author's move. */
+  state: RunState
+  /** how it ended, once it has */
+  ending?: RunEnding
+  /** what the run was about — a scene id, a route id — when it has one */
+  subject?: string
   events: number
   decision?: 'accepted' | 'rejected' | 'abandoned'
   /** Canon ids this run holds WRITE or PROPOSE over — never what it merely
@@ -608,6 +739,22 @@ export interface StreamMessage {
   detail?: unknown
 }
 
+/** What `arc doctor` counts on disk (A67-12): one entry per count, each with
+ *  a sample of the files behind it. Every one is read from the record — the
+ *  run directory, the transcript parent, `history/`, the registry's own
+ *  status — and never from prose. */
+export interface RecordCount {
+  id: 'runs-without-receipt' | 'transcripts-no-receipt-names' | 'proposals-out-of-date' | 'rows-never-attended'
+  count: number
+  /** at most a handful, so a terminal line stays a line */
+  some: string[]
+}
+export interface DoctorRecordsResponse {
+  counts: RecordCount[]
+  story: string
+  transcripts: string
+}
+
 export interface RunsResponse { runs: RunSummary[] }
 export interface RunResponse { run: RunSummary }
 export interface RunDetailResponse { run: RunSummary; events: RunEventPayload[] }
@@ -619,6 +766,12 @@ export interface RunDetailResponse { run: RunSummary; events: RunEventPayload[] 
 export interface OpenRunRequest { prompt: string; source?: RunSummary['source'] }
 export interface ObserveRunRequest { detail: unknown }
 export interface RunDecisionRequest { decision: 'accepted' | 'rejected' | 'abandoned'; note?: string }
+/** POST /api/runs/:id/stop — the run's child is killed, what landed stays,
+ *  and the run ends `cancelled` (A67-3). */
+export interface StopRunResponse { run: RunSummary }
+/** DELETE /api/runs/:id/transcript — the transcripts a run's launches named,
+ *  removed by id; `removed` lists what was on disk. */
+export interface DeleteTranscriptResponse { run: string; removed: string[] }
 export interface RunDecisionResponse { ok: true; receipt: string; dropped: string[] }
 
 /** Notes (/api/notes): whatever the author wanted written down.

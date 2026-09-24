@@ -142,7 +142,7 @@ export interface Finding {
 }
 
 export interface CanonDoc {
-  story?: { title?: string; logline?: string; themes?: string[]; protagonists?: string[] }
+  story?: { slug?: string; title?: string; logline?: string; themes?: string[]; protagonists?: string[] }
   timeline: { eras: EraLike[] }
   entities: Record<string, EntityLike>
   events: Record<string, EventLike>

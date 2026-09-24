@@ -9,4 +9,10 @@ __pycache__/
 # story is a story like any other, and gets one when it is run.
 examples/*/.claude/settings.json
 examples/*/.claude/settings.local.json
+
+# A story's working state — what a pass generated before the author decided,
+# the run records and their receipts (conventions §9; the story template
+# ignores the same directory). The worked example is a story like any other,
+# and arc runs against it by default.
+examples/*/.arc/
 .claude/settings.local.json

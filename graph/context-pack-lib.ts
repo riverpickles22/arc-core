@@ -18,7 +18,7 @@ export interface ContextPackOptions {
   maxChars?: number
 }
 
-export function buildContextPack(canon: CanonDoc & { generated_from?: string }, opts: ContextPackOptions): string {
+export function buildContextPack(canon: CanonDoc, opts: ContextPackOptions): string {
   const eras = canon.timeline?.eras ?? []
   const maxChars = opts.maxChars ?? 0
   const trim = (s?: string) => {
@@ -120,7 +120,11 @@ export function buildContextPack(canon: CanonDoc & { generated_from?: string }, 
   const out: string[] = []
   const item = (line: string, reason: string) => out.push(`- ${line}\n  — included: ${reason}`)
 
-  out.push(`# Context pack — ${chapter ? `${chapter.id}` : `T=${opts.at}`} · ${canon.generated_from ?? ''}`)
+  // Labelled by the story's slug, never by `generated_from`: that is the
+  // directory the export ran in, and a pack that names it is a brief that
+  // changes with the machine — the fixture engine fingerprints the brief
+  // over the record alone (A67-9).
+  out.push(`# Context pack — ${chapter ? `${chapter.id}` : `T=${opts.at}`} · ${canon.story?.slug ?? ''}`)
   out.push(`\n## Premise`)
   out.push(`${canon.story?.title ?? ''} — ${trim(canon.story?.logline)}`)
   out.push(`\n## Time & era`)
