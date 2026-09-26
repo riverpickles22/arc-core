@@ -29,6 +29,27 @@ states:
     psychology: >
       Content in a way she would not be able to defend to anyone who asked.
       The routine is the point: trim, wind, log, walk the dog, sleep, repeat.
+    # Wants and fears in their own fields, not inside the psychology prose
+    # above (conventions §4): a want living in a stance string is invisible to
+    # every diff and to every drafting context. These complete the record of
+    # this timepoint — they are what the psychology already implies — and the
+    # snapshot's claims are unchanged.
+    wants:
+      - For the night to go exactly as the last one went
+      - To be left to the work, by the board and by everyone else
+      - Wren sound and near, for as long as a dog lasts
+    fears:
+      - Being sent for, or sent to — any reason to go back down the point
+      - A night the routine is not enough for
+      - Being asked why she came
+    beliefs:
+      - The order of the watch is not habit; it is the reason the light holds
+      - Nobody is coming, and that is the arrangement, not a complaint
+    # The log is hers to fill, whoever it belongs to. It is listed here
+    # because `possessions` is how an object reaches a drafting context at all
+    # (context-pack-lib: objects are admitted by the POV's possessions at T) —
+    # a proposed fact that no brief can see proves nothing about status.
+    possessions: [obj.keepers-log]
     relationships:
       - { toward: char.wren, stance: "the one conversation; assumed permanent" }
       - { toward: place.whitcombe-light, stance: "not a job — the shape of the day itself" }

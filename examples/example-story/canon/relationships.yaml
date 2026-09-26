@@ -22,3 +22,21 @@ relationships:
     directed: true
     span: { start: { date: "1908-03" } }
     summary: Keeper of record — the lamp, the log, the stairs, the glass.
+
+  # PROPOSED, like the entity it points at (conventions §5). The edge cannot
+  # be canon while the node is not: a binding relationship to a fact the
+  # author has not ratified would make the log official by the back door.
+  # It hangs off char.ines, which sc.01-1 binds, so the writing slice reaches
+  # it in one hop and has to say what status it carries (A69-1).
+  - id: rel.ines-log
+    type: relationship
+    kind: controls
+    status: proposed
+    from: char.ines
+    to: obj.keepers-log
+    directed: true
+    span: { start: { date: "1908-03" } }
+    summary: >
+      She fills it at every watch, in six columns, and has never left one
+      empty. Whether it is the board's record or her own is the part that is
+      proposed.

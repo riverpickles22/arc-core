@@ -1,0 +1,25 @@
+# An open narrative obligation (conventions §12): the story owes the reader
+# this and no scene has discharged it. It carries no `satisfied_by`, which is
+# the normal state of an open obligation and exactly what the writing slice's
+# live-obligations layer reads (A69-1, for A69-6).
+id: mat.light-must-nearly-fail
+type: obligation
+status: unplaced
+body: >
+  The light has to come close to failing once before the Aurelia strikes —
+  a weight wound short, a wick that will not hold, ice on the glass. Something
+  that costs her a night and is put right.
+purpose: >
+  Chapter one spends itself proving the watch is sufficient. If the first time
+  the routine is tested is the wreck itself, the wreck reads as bad luck
+  rather than as the thing the routine was never going to be enough for. One
+  near-failure, survived, is what makes the reader believe the routine can be
+  beaten.
+constraints:
+  - Ines must put it right herself, without help arriving — help arriving is the wreck's move, not this one
+  - It must not be the eighty-fourth stair; the stair is the count's motif and has its own work
+related: [place.whitcombe-light, char.ines, event.the-wreck]
+window: { from: ch.01-ninety-one-stairs, to: ch.02-the-aurelia }
+note: >
+  Left open deliberately in the worked example: arc's reports and the writing
+  slice both need one obligation that nothing satisfies.

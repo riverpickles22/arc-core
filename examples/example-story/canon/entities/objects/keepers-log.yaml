@@ -1,0 +1,26 @@
+# A PROPOSED fact, on purpose (conventions §5, §13). The scene already writes
+# in this book — "Date, hour, wind, glass, sea, remarks" — but nothing in canon
+# says the log is a thing of record rather than Ines's own habit. Until the
+# author ratifies it, a pass may REFERENCE it and must not rest prose on it,
+# and arc's job is to say which of those two it is every time it hands the fact
+# to a model. The worked example carries one of these so the writing slice has
+# something to tag (A69-1; agent-workflows §4, "Canon, with status").
+id: obj.keepers-log
+type: object
+name: The Whitcombe light log
+status: proposed
+summary: >
+  The bound log kept in the lamp room: six ruled columns — date, hour, wind,
+  glass, sea, remarks — filled at every watch and, if it is a record rather
+  than a habit, collected by the board that pays for the paraffin.
+significance: >
+  If the log is official, the night of the wreck has a document in it that
+  Ines writes while the Aurelia is still afloat, and what she writes in
+  "remarks" becomes the story's one piece of contemporaneous testimony. If it
+  is only hers, that page is nobody's business and means something else
+  entirely. The author has not decided, which is why this is proposed.
+tags: [motif]
+grounding: [lighthouse-keeping]
+narrative_notes: >
+  Do not build a scene on the log being official until this is ratified. The
+  count and the order of things are the motifs it serves.

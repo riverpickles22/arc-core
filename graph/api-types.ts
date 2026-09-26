@@ -150,7 +150,19 @@ export interface ProseSentenceRequest {
 /** The drafting pass (/api/prose/draft-scene): generation into the working
  *  tree. The result is an ordinary draft — reviewed, accepted, or discarded
  *  through the existing draft layer; arc never ratifies its own prose. */
-export interface DraftSceneRequest { chapter: string; guidance?: string }
+/** One craft move, as arc's vocabulary and the author's sentence (A69-4). */
+export interface CraftMovePlanned { move: string; how: string }
+export interface CraftPlanned { moves: CraftMovePlanned[] }
+
+export interface DraftSceneRequest {
+  chapter: string
+  guidance?: string
+  /** THE SECOND CALL. Absent means the author has not been shown a plan yet:
+   *  a line said now returns one and writes nothing. A plan means they
+   *  settled it — as given, or edited. `null` means they withdrew the line
+   *  and want the draft without it (A69-4). */
+  plan?: CraftPlanned | null
+}
 /** The redraft pass (/api/prose/redraft): a REBUILD of existing prose, told
  *  apart from revise (minimal, annotation-driven) and rephrase (a selection,
  *  writes nothing). A whole scene, or an inclusive paragraph range whose
@@ -183,7 +195,22 @@ export interface WorkNotesResponse {
   /** The run that carries the receipt, when one was opened. */
   run: string | null
 }
-export interface DraftSceneResponse { reply: string; actions: ChatAction[]; file: string | null }
+export interface DraftSceneResponse {
+  reply: string
+  actions: ChatAction[]
+  file: string | null
+  /** the run that produced it — its receipt is `.arc/runs/<run>/receipt.yaml`
+   *  and, at the author's decision, `history/<run>.yaml` (A69-3). The receipt
+   *  ITSELF is not on this response yet: the fold that reads one under a
+   *  draft is A69-11's, and a field no code fills is a promise the type makes
+   *  and the backend does not keep. */
+  run?: string
+  /** THE CRAFT THE LINE BECAME (A69-4). Present on the first call's answer,
+   *  where there is no prose yet and the author reads one line — *Writing
+   *  toward: …* — before a token is spent; present again on the draft that
+   *  was written from it, so the fold can show what the pass was given. */
+  plan?: CraftPlanned
+}
 
 /** The reroute pass (/api/prose/reroute): another way to the same destination.
  *  The scene contract and the author's key points are the destination; the
