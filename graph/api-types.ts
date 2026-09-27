@@ -32,6 +32,9 @@ export interface ProseScene {
   scene: string; chapter: string; status: string
   pov: string | null; events: string[]; facts: string[]
   contract: SceneContract | null
+  /** The window the scene covers (conventions §10), when its frontmatter
+   *  says. The handoff diffs the record over it (A69-5). */
+  span?: { start?: string; end?: string }
   file: string; body: string
 }
 

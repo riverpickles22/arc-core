@@ -111,7 +111,10 @@
         "status"
       ]
     },
-    "description": "A keypoint carries no status. The backend never writes one, and the arc-canon skill §11 instructs sessions not to — so a keypoint that has acquired one is a marker that has drifted into being a task, which is exactly the confusion the two kinds exist to keep apart."
+    "description": "A keypoint carries no status. The backend never writes one, and the arc-canon skill §11 instructs sessions not to — so a keypoint that has acquired one is a marker that has drifted into being a task, which is exactly the confusion the two kinds exist to keep apart. And a keypoint says who minted it: `by` is required, because a session's keypoints are the agent's (§14) and every reader treats absence as the author's — a keypoint that does not say is a session's reading filed under the author's name.",
+    "required": [
+      "by"
+    ]
   },
   "else": {
     "required": [
