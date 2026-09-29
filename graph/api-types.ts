@@ -236,6 +236,12 @@ export interface DraftSceneResponse {
  *  lock-gated scene write, and only then does the ledger learn of the route. */
 /** `dry` runs the slice and the brief and never spawns: the response carries
  *  the rendered briefs, one per seed, and no route (A67-2). */
+/** ASK AGAIN (A69-13): re-issue one route's job — the same notes by id, the
+ *  same line, the same seed — against the record and the row as they stand
+ *  now. The answer REPLACES the route named here, so the scene's count is
+ *  unchanged; *another way through* stays the only gesture that adds one. */
+export interface AskAgainRequest { scene: string; alt: string; depth?: string }
+
 export interface RerouteRequest {
   scene: string
   count?: number
@@ -280,6 +286,11 @@ export interface RouteAlternative {
    *  while the route waits, and `history/<run>.yaml` once the author adopts
    *  it (A67-4). Absent on a route written by an older arc. */
   run?: string
+  /** ASKED AGAIN (A69-13): this route replaced one the author asked again
+   *  for, rather than joining the ones already on the scene. Kept on the
+   *  route itself because the fold must still say so after the run's
+   *  working receipt has been cleaned up. */
+  reissued?: boolean
   /** the fingerprints of everything the pass read to write it (invariant 1;
    *  A67-10). Compared at the write path: a changed fingerprint makes the
    *  route stale. Absent on a route written by an older arc. */
@@ -412,6 +423,14 @@ export interface RouteReceipt {
   leaned_on?: { id: string; as_of: string; older_by_days: number }[]
   /** the notes the pass was handed, each with who wrote it (A69-9) */
   notes_handed?: { id: string; by: 'author' | 'agent' }[]
+  /** THE RECEIPT THIS RUN RE-ISSUED (A69-13). Present when the author asked
+   *  again for a route: the same job, against the record as it stood at the
+   *  asking. A route written by an older arc left no receipt to name, so a
+   *  re-issue of one carries the flag and not the id. */
+  reissued_from?: string
+  /** true when this run was an *ask again*, whether or not the route it
+   *  replaced had a receipt to name */
+  reissued?: boolean
   /** TRUE WHEN ARC HAS CHANGED SINCE (Q14, the author's decision): the job's
    *  fingerprint moved after this run, so what arc would write now is not
    *  what it wrote then. A LABEL, never a staleness that hides the work. */
