@@ -51,6 +51,10 @@ export interface ProseChange {
    *  the ledger, never a model's reading: a note is listed here because the
    *  pass was handed it, not because anyone judged it answered. */
   answers?: string[]
+  /** The run that wrote it, from the ledger — the address of its receipt
+   *  (A69-11). It is also what tells a governed draft from one an unrowed
+   *  pass left here: a change with an origin and no run predates the row. */
+  run?: string
 }
 
 export interface ProseDraft {
@@ -171,7 +175,16 @@ export interface DraftSceneRequest {
  *  writes nothing). A whole scene, or an inclusive paragraph range whose
  *  surroundings are preserved byte-for-byte by construction. The result is
  *  an ordinary draft, reviewed through the existing gate. */
-export interface RedraftRequest { scene: string; paragraphs?: [number, number]; guidance?: string }
+export interface RedraftRequest {
+  scene: string
+  paragraphs?: [number, number]
+  guidance?: string
+  /** THE SECOND CALL, as the draft's (A69-4, A69-8). Absent means the author
+   *  has not been shown a plan: a line said now returns one and writes
+   *  nothing. A plan means they settled it; `null` means they withdrew the
+   *  line and want the pass without it. */
+  plan?: CraftPlanned | null
+}
 
 /** "Work through my notes on this scene" (/api/prose/work-notes): the
  *  scene's open notes are the brief, no ceremony. `revise` is the minimal
@@ -335,6 +348,13 @@ export interface RouteGateReading {
  *  The three readings are kept apart on purpose: "arc chose not to show it"
  *  and "arc ran out of room" are different facts about the same absence, and
  *  a page that merges them tells the author neither. */
+/** WHAT ARC RECORDED ABOUT ITS OWN RUN, in the shape the author reads. Named
+ *  for the route reader that first showed one (A67-11); since A69-11 it is
+ *  the receipt EVERY run shows, under the one fold that renders it, so a
+ *  draft and a route cannot describe the same facts two different ways.
+ *
+ *  Everything here is PROVEN: arc writes every field from the slice manifest,
+ *  the gate records and the envelope. No model writes its own receipt. */
 export interface RouteReceipt {
   /** the run that made the route */
   run: string
@@ -360,7 +380,48 @@ export interface RouteReceipt {
   wall_clock_ms?: number
   started_at: string
   decided_at: string
+
+  // ---- what a writing run adds (A69-11) ----------------------------------
+
+  /** THE LINE THE AUTHOR SAID AND THE CRAFT IT BECAME (A69-4). `said` is
+   *  their words; `plan` is what the writing pass was given instead of them. */
+  intent?: {
+    said: string | null
+    plan: { moves: { move: string; how: string }[] } | null
+    /** they read a plan and drafted without it */
+    withdrawn?: boolean
+    /** why no reading ran, when none did */
+    note?: string
+  } | null
+  /** EVERY LAYER OF THE BRIEF, with the status the author reads. The three
+   *  lists above are the summary; this is the reading, and it is the reason
+   *  `not shown` can never be mistaken for `none` (A69-2). */
+  layers?: {
+    layer: string
+    status: 'given' | 'not shown' | 'deferred' | 'none'
+    ids: string[]
+    /** why, when it is not `given` */
+    because?: string
+    note?: string
+    leaned_on?: { id: string; as_of: string; older_by_days: number }[]
+    /** the rung each sibling scene reached the pass on (A69-7) */
+    rungs?: { scene: string; rung: string }[]
+  }[]
+  /** every state fact the brief carried past the row's freshness distance,
+   *  with how far past (A69-6) — proven from the manifest, never argued */
+  leaned_on?: { id: string; as_of: string; older_by_days: number }[]
+  /** the notes the pass was handed, each with who wrote it (A69-9) */
+  notes_handed?: { id: string; by: 'author' | 'agent' }[]
+  /** TRUE WHEN ARC HAS CHANGED SINCE (Q14, the author's decision): the job's
+   *  fingerprint moved after this run, so what arc would write now is not
+   *  what it wrote then. A LABEL, never a staleness that hides the work. */
+  older_arc?: boolean
 }
+
+/** One run's receipt, by id (/api/runs/:id/receipt). 404 when arc kept
+ *  none — a run from before arc kept receipts, or one whose kept files have
+ *  been cleared. */
+export interface RunReceiptResponse { receipt: RouteReceipt }
 
 export interface RerouteRefusal {
   seed: string
