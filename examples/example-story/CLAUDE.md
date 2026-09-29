@@ -64,17 +64,18 @@ Run after any canon change:
     Ines's 1910 state lists the log under `possessions`, because that is the
     only way an object reaches a drafting context at all: a proposed fact no
     brief can see proves nothing. `fixture-engine.test.ts` holds that line.
-
-  **In canon, and not yet in any brief** — the sources the slice-2 layers
-  will read, named here so nobody assumes today's pack already renders them:
   - `material/mat-light-must-nearly-fail.yaml` is an **open obligation**
     nothing discharges, windowed over ch.01–ch.02. Absence of `satisfied_by`
     is the normal state of an open obligation. The briefing's WHAT'S DUE
-    reads it today; the live-obligations layer of a writing brief is A69-6's.
-  - Both characters the scene binds carry a `voice`. Only the POV's reaches
-    the brief right now: the pack seeds its cast from the POV and from event
-    participants, and this scene binds no events, so Wren is in canon and not
-    in the brief. The layer that reads every bound character is A69-7's.
+    reads it, and so does a writing brief's *what is live here* (A69-6).
+  - Both characters the scene binds carry a `voice`, and both reach a
+    writing brief's voice layer (A69-7) — the POV's and Wren's, each by id,
+    under the point-of-view rule read from §1 of `docs/style.md`. The chapter
+    summary in `canon/chapters.yaml` and Ines's state history are what the
+    brief's *position* layer reads; the scene itself is the sibling on the
+    ladder when the next scene is drafted.
+
+  **In canon, and not yet in any brief:**
   - The handoff layer's empty case — *none, the first scene of the book* — is
     real here rather than contrived, because sc.01-1 is the first scene of the
     first chapter. A second scene arriving later is fine; sc.01-1 ceasing to

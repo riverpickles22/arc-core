@@ -617,41 +617,16 @@ export interface UpdateMaterialRequest {
 }
 export interface UpdateMaterialResponse { item: MaterialItem }
 
-/** Revision fan-out (/api/prose/revise): the author's open notes worked into
- *  the prose. Conflicts are surfaced BEFORE anything is written — a non-empty
- *  `conflicts` means nothing was revised and the author decides first. */
+/** A tension between two of the author's open notes, surfaced BEFORE
+ *  anything is written: a non-empty list means nothing was revised and the
+ *  author decides which note wins (U2, `/api/prose/work-notes`).
+ *
+ *  `RevisionResult` and `ReviseResponse` went with the book-wide revision
+ *  fan-out in A69-9: it put prose in the Changes reading from a pass with no
+ *  row, which the trust boundary forbids once that surface is governed, and
+ *  nothing called it. Revising every note in the book at once is Revise at
+ *  manuscript scope, which no slice owns yet. */
 export interface NoteConflict { between: string[]; tension: string }
-
-export interface RevisionResult {
-  scene: string
-  file: string
-  /** The notes this revision answers. Provenance, carried to the receipt. */
-  notes: string[]
-  words_before: number
-  words_after: number
-  word_delta: number
-  changed: boolean
-  /** Non-empty when something this node read moved under it. */
-  stale: string[]
-  refused?: string
-  error?: string
-}
-
-export interface ReviseResponse {
-  conflicts: NoteConflict[]
-  clusters: number
-  /** How many rounds the write sets forced. One wave means everything was
-   *  disjoint and ran at once. */
-  waves: number
-  revisions: RevisionResult[]
-  notes_addressed: string[]
-  scenes_changed: string[]
-  word_delta: number
-  stale_nodes: string[]
-  proposed_canon_changes: string[]
-  wall_ms: number
-  run: string
-}
 
 /** Editorial lenses (/api/prose/lenses): several readings of one scene at
  *  once, each from its own projection of the graph. Read-only by
