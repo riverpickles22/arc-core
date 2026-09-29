@@ -435,9 +435,19 @@ export interface SuggestRequest {
   file?: string
 }
 export interface SuggestResponse {
+  /** The wordings that SURVIVED their gates, in the order the pass offered
+   *  them. A rephrase's options are measured one by one against the two
+   *  countable rules the author ratified, and one that breaks a rule is
+   *  dropped before the author sees it — how many went is on the receipt
+   *  (A69-10). */
   suggestions: string[]
   register: Extract<Register, 'argued'>
   engine: 'sdk' | 'claude-cli' | 'fixture'
+  /** the run that offered them — its receipt is
+   *  `.arc/runs/<run>/receipt.yaml` (A69-10). The receipt ITSELF is not on
+   *  this response: the fold that reads one is A69-11's, and a field no code
+   *  fills is a promise the type makes and the backend does not keep. */
+  run?: string
 }
 
 /** The style contract (/api/style, conventions §10): the author's voice in
