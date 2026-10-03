@@ -1,7 +1,13 @@
 name: ci
 
 # One test step, the same command the pre-commit hook runs (A70-5): the list
-# of what counts as green lives in tools/check.sh and nowhere else. The runner
+# of what counts as green lives in tools/check.sh and nowhere else.
+#
+# NOTHING DEPENDS ON THIS FILE. The author decided on 2026-10-03 that a remote
+# gate is out of scope for a pet project (design/platform-and-ecosystem/
+# workbench.md §10): the gate is the local checks, the commit hooks, the Bash
+# wall and the pen guard. This workflow is kept because it is correct and costs
+# nothing. It runs on main and on pull requests. The runner
 # needs the venv the templates expect at arc-core/.venv — bin/validate refuses
 # to run without it, which is what kept this red from 2026-08-26 to A70-5.
 on:

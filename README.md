@@ -68,7 +68,8 @@ The **graph layer** (`graph/`, Node 22+) works on the export JSON — the date-o
 
 **The testing pattern** (established by the date vectors; new checks follow it):
 one command per repo — `npm test` in `graph/` runs every TS suite, and each
-`tools/test_*.py` runs standalone (both wired into CI). A rule implemented in
+`tools/test_*.py` runs standalone (both run by `tools/check.sh`, which the
+pre-commit hook runs). A rule implemented in
 more than one language is specified once in a **shared vector file**
 (`graph/date-vectors.json`) that every implementation runs — sections a
 language can't apply say so in the file (`eras` is TS-only). Behavioral
