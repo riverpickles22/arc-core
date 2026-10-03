@@ -1,5 +1,9 @@
 name: ci
 
+# One test step, the same command the pre-commit hook runs (A70-5): the list
+# of what counts as green lives in tools/check.sh and nowhere else. The runner
+# needs the venv the templates expect at arc-core/.venv — bin/validate refuses
+# to run without it, which is what kept this red from 2026-08-26 to A70-5.
 on:
   push:
     branches: [main]
@@ -15,61 +19,15 @@ jobs:
         with:
           node-version: 22
 
-      - name: graph tests (date vectors, reports, checks)
-        run: npm test
-        working-directory: graph
-
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
 
-      - name: python requirements
-        run: pip install -r requirements.txt
+      - name: the venv the check expects
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -q --upgrade pip
+          .venv/bin/pip install -q -r requirements.txt
 
-      - name: date vectors (python side of the shared rule)
-        run: python3 tools/test_date_vectors.py
-
-      - name: sentence vectors (python side of the shared rule)
-        run: python3 tools/test_sentence_vectors.py
-
-      - name: validate the worked example
-        run: python3 tools/validate.py examples/example-story
-
-      - name: provenance registers (negative-tested)
-        run: python3 tools/test_provenance.py
-
-      - name: story shape — the files every story owes (negative-tested)
-        run: python3 tools/test_story_shape.py
-
-      - name: templates survive being copied into a story
-        run: python3 tools/test_templates.py
-
-      - name: story format version (negative-tested)
-        run: python3 tools/test_format_version.py
-
-      - name: annotation scope — passage or section (negative-tested)
-        run: python3 tools/test_annotation_scope.py
-
-      - name: keypoint shape — what arc instructs must validate (negative-tested)
-        run: python3 tools/test_keypoint_shape.py
-
-      - name: new-story builds a conforming story from answers (negative-tested)
-        run: python3 tools/test_new_story.py
-
-      - name: STORY-FORMAT.md's mapping table matches the validator
-        run: python3 tools/test_story_format.py
-
-      - name: lock shape — three anchors, every blend refused (negative-tested)
-        run: python3 tools/test_lock_shape.py
-
-      - name: lock gate — the validator goes red on overwritten settled prose
-        run: python3 tools/test_lock_gate.py
-
-      - name: commit gate — git refuses to ratify an edit to locked prose
-        run: python3 tools/test_commit_gate.py
-
-      - name: lock guard — the agent's pen refused before the tool runs
-        run: node hooks/test-lock-guard.mjs
-
-      - name: the obligation satisfaction chain (negative-tested)
-        run: python3 tools/test_obligations.py
+      - name: the check — validate, every python suite, the lock guard, the graph
+        run: tools/check.sh
