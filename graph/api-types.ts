@@ -103,10 +103,12 @@ export interface BriefingResponse {
 
 export interface DocsResponse { articles: DocArticle[] }
 export interface ProseResponse { scenes: ProseScene[] }
-/** `files` scopes the accept to particular scenes, so the decision can live
- *  at the scene it is about rather than in a list of everything pending
- *  (A64-3). Absent, every pending scene is ratified, as it always was. */
-export interface ProseAcceptRequest { message?: string; capture?: boolean; files?: string[] }
+/** `files` names the scenes this accept ratifies, and is REQUIRED (A72-1):
+ *  the decision lives at the scene it is about (A64-3), and there is no
+ *  accept-everything — a request that named no file used to take the whole
+ *  prose directory, a decision no author ever read. Each entry is a plain
+ *  `prose/…/scene.md` path with a pending change. */
+export interface ProseAcceptRequest { message?: string; capture?: boolean; files: string[] }
 export interface ProseAcceptResponse {
   hash: string
   files: string[]
