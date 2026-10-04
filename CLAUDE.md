@@ -1,6 +1,6 @@
 # arc-core — agent notes
 
-Read `../arc-system-design/AGENTS.md` first; it carries the rules every arc
+Read `../arc-context/AGENTS.md` first; it carries the rules every arc
 repo shares. This file is only what is particular to the constitution.
 
 - **`conventions.md` is binding on every story and every tool.** A change to
@@ -11,7 +11,7 @@ repo shares. This file is only what is particular to the constitution.
   gate for locked prose all live in `tools/`; `examples/example-story` must
   validate after any change, and it is the first thing `tools/check.sh` runs
   — which is the gate, there being no CI by the author's decision
-  (`../arc-system-design/design/platform-and-ecosystem/workbench.md` §10).
+  (`../arc-context/design/platform-and-ecosystem/workbench.md` §10).
 - **`graph/` is the shared module** (`arc-canon-graph`): projections, checks,
   reports, prose checks, and `api-types.ts`, the wire contract both apps
   import. Add types here before either app uses them.
